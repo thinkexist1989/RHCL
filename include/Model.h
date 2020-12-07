@@ -1,6 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "Link.h"
+
 namespace RHCL
 {
     class Model
@@ -11,14 +13,6 @@ namespace RHCL
         Model(/* args */);
         ~Model();
     };
-
-    Model::Model(/* args */)
-    {
-    }
-
-    Model::~Model()
-    {
-    }
 
 } // namespace RHCL
 

@@ -36,7 +36,6 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-
 set(LIBS Qt5::Widgets Qt5::Network Qt5::Xml Qt5::OpenGL ${ASSIMP_LIBRARIES} ${PCL_LIBRARIES})
 
 if(WIN32)
@@ -49,5 +48,11 @@ endif(WIN32)
 
 link_directories(${ASSIMP_LIBRARY_DIRS})
 
+
+# test
 add_executable (manual_registration test/manual_registration.cpp)
 target_link_libraries (manual_registration ${LIBS})
+
+add_executable (test test/test.cpp)
+target_include_directories(test PUBLIC include)
+target_link_libraries (test ${LIBS})
