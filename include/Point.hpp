@@ -8,6 +8,8 @@ namespace RHCL {
         double _x, _y, _z;     //point's coordinate
         double _r, _g, _b, _a; //point's color
     public:
+        Point(/*args*/);
+
         Point(double x, double y, double z);
 
         Point(double x, double y, double z, double r, double g, double b, double a = 1.0f);

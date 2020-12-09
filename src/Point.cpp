@@ -13,7 +13,8 @@ namespace RHCL {
     * @param y
     * @param z
     */
-    Point::Point(double x, double y, double z) : _x(x), _y(y), _z(z) {
+    Point::Point(double x, double y, double z) : _x(x), _y(y), _z(z), _r(0),
+                                                 _g(0), _b(0), _a(1.0f) {
     }
 
     /**
@@ -36,6 +37,14 @@ namespace RHCL {
      *
      */
     Point::~Point() {
+    }
+
+    /**
+     * @brief Construct a new Point:: Point object
+     */
+    Point::Point() : _x(0), _y(0), _z(0), _r(0),
+                     _g(0), _b(0), _a(1.0f) {
+
     }
 
 }

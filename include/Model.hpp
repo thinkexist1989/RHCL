@@ -5,19 +5,18 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-namespace RHCL
-{
-    class Model
-    {
+namespace RHCL {
+    class Model {
     public:
         typedef Link Link; //typedef in Model, so can be used as RHCL::Model::Link
 
     private:
         /* data */
-        std::vector<boost::shared_ptr<Link>> _linkPtrs; //Save all the links of manipulaotr
+        std::vector<Link> _linkPtrGrp; //Save all the links of manipulator
 
     public:
         Model(/* args */);
+        
         ~Model();
 
         /**
@@ -25,7 +24,7 @@ namespace RHCL
          * 
          * @return int 
          */
-        inline int getLinkNum() const { return _linkPtrs.size(); }
+        inline int getLinkNum() const { return _linkPtrGrp.size(); }
 
         /**
          * @brief Get the Point Cloud of current state
@@ -34,16 +33,13 @@ namespace RHCL
          */
         std::vector<Point> getPointCloud() const;
 
+        /**
+         * @brief Get the Point Cloud of the specific state
+         * @param JointRads
+         * @return
+         */
         std::vector<Point> getPointCloud(std::vector<double> &JointRads) const;
     };
-
-    Model::Model(/* args */)
-    {
-    }
-
-    Model::~Model()
-    {
-    }
 
 } // namespace RHCL
 
