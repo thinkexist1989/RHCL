@@ -32,11 +32,14 @@ find_package(Assimp REQUIRED)
 # OpenGL
 find_package(OpenGL REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# YAML-CPP
+find_package(yaml-cpp REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-set(LIBS Qt5::Widgets Qt5::Network Qt5::Xml Qt5::OpenGL ${ASSIMP_LIBRARIES} ${PCL_LIBRARIES})
+set(LIBS Qt5::Widgets Qt5::Network Qt5::Xml Qt5::OpenGL ${YAML_CPP_LIBRARIES} ${ASSIMP_LIBRARIES} ${PCL_LIBRARIES})
 
 file(GLOB SRC "src/*.cpp") #添加src目录下所有源文件
 

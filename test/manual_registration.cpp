@@ -1,23 +1,27 @@
+//
+// Created by think on 2020/12/15.
+//
+
 #include <conio.h>
 #include<vector>
 #include<iostream>
 #include<string>
 #include<ctime>
-// io¶ÁÈ¡µÄÍ·ÎÄ¼ş
+// ioè¯»å–çš„å¤´æ–‡ä»¶
 #include <pcl/PolygonMesh.h>
 #include <pcl/io/io.h>
 #include<pcl/io/obj_io.h>
 #include<pcl/io/ply_io.h>
 #include<pcl/io/pcd_io.h>
-#include <pcl/io/vtk_lib_io.h>//loadPolygonFileËùÊôÍ·ÎÄ¼ş£»
+#include <pcl/io/vtk_lib_io.h>//loadPolygonFileæ‰€å±å¤´æ–‡ä»¶ï¼›
 #include<pcl/console/parse.h>
 
 //
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/registration/icp.h>	
-#include <pcl/filters/random_sample.h> //½µ²ÉÑùÓÃµ½µÄÍ·ÎÄ¼ş
+#include <pcl/registration/icp.h>
+#include <pcl/filters/random_sample.h> //é™é‡‡æ ·ç”¨åˆ°çš„å¤´æ–‡ä»¶
 #include<pcl/filters/extract_indices.h>
 #include<pcl/filters/voxel_grid.h>
 #include<pcl/kdtree/kdtree_flann.h>
@@ -25,408 +29,408 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/fpfh.h>
 using namespace std;
-// Mutex: //½ø³ÌËø
+// Mutex: //è¿›ç¨‹é”
 boost::mutex source_point_cloud_mutex;
 boost::mutex target_point_cloud_mutex;
 
 void printUsage(const char* progName)
 {
-	cout << "ÏÈÊäÈëÁ½¸öµãÔÆÃû×Ö£¬ÔÙ¼ÓÒ»¸ö·½·¨Êı×Ö0ÊÇÊÖ¶¯£¬1ÊÇsac_icp,²»ÊäÈëÄ¬ÈÏÎª0" << endl;
-	cout << "Àı×Ó£º"<<progName<<" source_point_cloud.pcd/obj/ply target_point_cloud.pcd/obj/ply 1" << endl;
-	cout << "²âÊÔ°æ±¾" << endl;
+    cout << "å…ˆè¾“å…¥ä¸¤ä¸ªç‚¹äº‘åå­—ï¼Œå†åŠ ä¸€ä¸ªæ–¹æ³•æ•°å­—0æ˜¯æ‰‹åŠ¨ï¼Œ1æ˜¯sac_icp,ä¸è¾“å…¥é»˜è®¤ä¸º0" << endl;
+    std::cout << "examples: " << progName << "source_point_cloud.pcd\\obj\\ply target_point_cloud.pcd\\obj\\ply 1" << std::endl;
+//    cout << "æµ‹è¯•ç‰ˆæœ¬" << endl;
 }
 
-//¶ÁÈ¡µãÔÆÎÄ¼ş//
+//è¯»å–ç‚¹äº‘æ–‡ä»¶//
 void read_pointcloud(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud, int argc, char **argv)
 {
-	clock_t read_pc_start = clock();
-	string pc1name = argv[1];
-	string pc2name = argv[2];
-	string pc1ext = pc1name.substr(pc1name.size() - 3);
-	string pc2ext = pc2name.substr(pc2name.size() - 3);
-	pcl::PolygonMesh mesh1;
-	pcl::PolygonMesh mesh2;
-	if (pc1ext.compare("ply") == 0)
-		pcl::io::loadPLYFile(argv[1], *source_point_cloud);
-	if (pc1ext.compare("obj") == 0)
-	{
-		cout << "¿ªÊ¼¶Ásource_point_cloud" <<  endl;
-		pcl::io::loadPolygonFile(argv[1], mesh1);
-		cout << "¶ÁÍêsource_point_cloud£¬×ªpcl" << endl;
-		pcl::fromPCLPointCloud2(mesh1.cloud, *source_point_cloud);
-		cout << "´¦ÀíÍêsource_point_cloud" << endl;
-	}
-		//pcl::io::loadOBJFile(argv[1], *source_point_cloud); //ÕâÖÖ¶ÁÈëµÄ·½Ê½ÌØ±ğÂı
-	if (pc1ext.compare("pcd") == 0)
-		pcl::io::loadPCDFile(argv[1], *source_point_cloud);
-	if (pc2ext.compare("ply") == 0)
-		pcl::io::loadPLYFile(argv[2], *target_point_cloud);
-	if (pc2ext.compare("obj") == 0)		
-	{
-		cout << "¿ªÊ¼¶Átarget_point_cloud" << endl;
-		pcl::io::loadPolygonFile(argv[2], mesh2);
-		cout << "¶ÁÍêtarget_point_cloud£¬×ªpcl" << endl;
-		pcl::fromPCLPointCloud2(mesh2.cloud, *target_point_cloud);
-		cout << "´¦ÀíÍêtarget_point_cloud" << endl;
-	}
-		//pcl::io::loadOBJFile(argv[2], *target_point_cloud); //ÕâÖÖ¶ÁÈëµÄ·½Ê½ÌØ±ğÂı
-	if (pc2ext.compare("pcd") == 0)
-		pcl::io::loadPCDFile(argv[2], *target_point_cloud);
-	
-	clock_t read_pc_end = clock();
-	cout << "read pointcloud time: " << (double)(read_pc_end - read_pc_start) / (double)CLOCKS_PER_SEC << " s" << endl;
-	cout << "source_point_cloud size : " << source_point_cloud->points.size() << endl;
-	cout << "target_point_cloud size : " << target_point_cloud->points.size() << endl;
+    clock_t read_pc_start = clock();
+    string pc1name = argv[1];
+    string pc2name = argv[2];
+    string pc1ext = pc1name.substr(pc1name.size() - 3);
+    string pc2ext = pc2name.substr(pc2name.size() - 3);
+    pcl::PolygonMesh mesh1;
+    pcl::PolygonMesh mesh2;
+    if (pc1ext.compare("ply") == 0)
+        pcl::io::loadPLYFile(argv[1], *source_point_cloud);
+    if (pc1ext.compare("obj") == 0)
+    {
+        cout << "å¼€å§‹è¯»source_point_cloud" <<  endl;
+        pcl::io::loadPolygonFile(argv[1], mesh1);
+        cout << "è¯»å®Œsource_point_cloudï¼Œè½¬pcl" << endl;
+        pcl::fromPCLPointCloud2(mesh1.cloud, *source_point_cloud);
+        cout << "å¤„ç†å®Œsource_point_cloud" << endl;
+    }
+    //pcl::io::loadOBJFile(argv[1], *source_point_cloud); //è¿™ç§è¯»å…¥çš„æ–¹å¼ç‰¹åˆ«æ…¢
+    if (pc1ext.compare("pcd") == 0)
+        pcl::io::loadPCDFile(argv[1], *source_point_cloud);
+    if (pc2ext.compare("ply") == 0)
+        pcl::io::loadPLYFile(argv[2], *target_point_cloud);
+    if (pc2ext.compare("obj") == 0)
+    {
+        cout << "å¼€å§‹è¯»target_point_cloud" << endl;
+        pcl::io::loadPolygonFile(argv[2], mesh2);
+        cout << "è¯»å®Œtarget_point_cloudï¼Œè½¬pcl" << endl;
+        pcl::fromPCLPointCloud2(mesh2.cloud, *target_point_cloud);
+        cout << "å¤„ç†å®Œtarget_point_cloud" << endl;
+    }
+    //pcl::io::loadOBJFile(argv[2], *target_point_cloud); //è¿™ç§è¯»å…¥çš„æ–¹å¼ç‰¹åˆ«æ…¢
+    if (pc2ext.compare("pcd") == 0)
+        pcl::io::loadPCDFile(argv[2], *target_point_cloud);
+
+    clock_t read_pc_end = clock();
+    cout << "read pointcloud time: " << (double)(read_pc_end - read_pc_start) / (double)CLOCKS_PER_SEC << " s" << endl;
+    cout << "source_point_cloud size : " << source_point_cloud->points.size() << endl;
+    cout << "target_point_cloud size : " << target_point_cloud->points.size() << endl;
 }
 
-//ÓÃÓÚ¸ø»Øµ÷º¯ÊıµÄ½á¹¹Ìå¶¨Òå
+//ç”¨äºç»™å›è°ƒå‡½æ•°çš„ç»“æ„ä½“å®šä¹‰
 // structure used to pass arguments to the callback function
 struct callback_args
 {
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d;
-	pcl::visualization::PCLVisualizer::Ptr viewerPtr;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d;
+    pcl::visualization::PCLVisualizer::Ptr viewerPtr;
 };
 
-void pairpointselect_callback(const pcl::visualization::PointPickingEvent& event, void* args) //Ñ¡µã£¬±êºì
+void pairpointselect_callback(const pcl::visualization::PointPickingEvent& event, void* args) //é€‰ç‚¹ï¼Œæ ‡çº¢
 {
-	int n;
-	struct callback_args* data = (struct callback_args *)args;
-	if (event.getPointIndex() == -1)
-		return;
-	pcl::PointXYZRGBA current_point;
-	event.getPoint(current_point.x, current_point.y, current_point.z); //µÃµ½µ±Ç°µã×ø±ê
-	//data->clicked_points_3d->clear();//½«ÉÏ´ÎÑ¡µÄµãÇå¿Õ
-	data->clicked_points_3d->points.push_back(current_point);//Ìí¼ÓĞÂÑ¡ÔñµÄµã
-	n = data->clicked_points_3d->points.size();
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> red(data->clicked_points_3d, 255, 0, 0); //½«Ñ¡ÖĞµãÓÃºìÉ«±ê¼Ç
-	data->viewerPtr->removePointCloud("clicked_points");
-	data->viewerPtr->addPointCloud(data->clicked_points_3d, red, "clicked_points");
-	data->viewerPtr->addText3D(to_string(n), current_point,0.01,1.0,0.0,0.0,to_string(n));
-	data->viewerPtr->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, "clicked_points");
-	cout << current_point.x << " " << current_point.y << " " << current_point.z << endl;
-	//cout << data->viewerPtr->window_name() << "select " << n << " corresponding points" << endl;
+    int n;
+    struct callback_args* data = (struct callback_args *)args;
+    if (event.getPointIndex() == -1)
+        return;
+    pcl::PointXYZRGBA current_point;
+    event.getPoint(current_point.x, current_point.y, current_point.z); //å¾—åˆ°å½“å‰ç‚¹åæ ‡
+    //data->clicked_points_3d->clear();//å°†ä¸Šæ¬¡é€‰çš„ç‚¹æ¸…ç©º
+    data->clicked_points_3d->points.push_back(current_point);//æ·»åŠ æ–°é€‰æ‹©çš„ç‚¹
+    n = data->clicked_points_3d->points.size();
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> red(data->clicked_points_3d, 255, 0, 0); //å°†é€‰ä¸­ç‚¹ç”¨çº¢è‰²æ ‡è®°
+    data->viewerPtr->removePointCloud("clicked_points");
+    data->viewerPtr->addPointCloud(data->clicked_points_3d, red, "clicked_points");
+    data->viewerPtr->addText3D(to_string(n), current_point,0.01,1.0,0.0,0.0,to_string(n));
+    data->viewerPtr->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, "clicked_points");
+    cout << current_point.x << " " << current_point.y << " " << current_point.z << endl;
+    //cout << data->viewerPtr->window_name() << "select " << n << " corresponding points" << endl;
 }
 
-//¼ÆËãµãÔÆÃÜ¶È
+//è®¡ç®—ç‚¹äº‘å¯†åº¦
 void compute_pointcloud_density(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud, double &delta) {
-	int aa = point_cloud->points.size();
-	double qxmax = point_cloud->points[0].x;
-	double qxmin = point_cloud->points[0].x;
-	double qymax = point_cloud->points[0].y;
-	double qymin = point_cloud->points[0].y;
-	double qzmax = point_cloud->points[0].z;
-	double qzmin = point_cloud->points[0].z;
-	for (int i = 0; i < aa - 1; i++)
-	{
-		double qx = point_cloud->points[i].x;
-		qxmax = max(qx, qxmax);
-		qxmin = min(qx, qxmin);
-		double qy = point_cloud->points[i].y;
-		qymax = max(qy, qymax);
-		qymin = min(qy, qymin);
-		double qz = point_cloud->points[i].z;
-		qzmax = max(qz, qzmax);
-		qzmin = min(qz, qzmin);
+    int aa = point_cloud->points.size();
+    double qxmax = point_cloud->points[0].x;
+    double qxmin = point_cloud->points[0].x;
+    double qymax = point_cloud->points[0].y;
+    double qymin = point_cloud->points[0].y;
+    double qzmax = point_cloud->points[0].z;
+    double qzmin = point_cloud->points[0].z;
+    for (int i = 0; i < aa - 1; i++)
+    {
+        double qx = point_cloud->points[i].x;
+        qxmax = max(qx, qxmax);
+        qxmin = min(qx, qxmin);
+        double qy = point_cloud->points[i].y;
+        qymax = max(qy, qymax);
+        qymin = min(qy, qymin);
+        double qz = point_cloud->points[i].z;
+        qzmax = max(qz, qzmax);
+        qzmin = min(qz, qzmin);
 
-	}
-	double pointnumber = pow(aa, 1.0 / 3);
-	delta = max(max((qxmax - qxmin) / pointnumber, (qymax - qymin) / pointnumber), (qzmax - qzmin) / pointnumber);
+    }
+    double pointnumber = pow(aa, 1.0 / 3);
+    delta = max(max((qxmax - qxmin) / pointnumber, (qymax - qymin) / pointnumber), (qzmax - qzmin) / pointnumber);
 }
 
-//½µ²ÉÑù
+//é™é‡‡æ ·
 void DownSample(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud)
 {
-	pcl::RandomSample<pcl::PointXYZRGBA> sor;
-	sor.setInputCloud(cloud);
-	sor.setSample(10000);
-	sor.filter(*cloud);
+    pcl::RandomSample<pcl::PointXYZRGBA> sor;
+    sor.setInputCloud(cloud);
+    sor.setSample(10000);
+    sor.filter(*cloud);
 }
 void method_icp(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr OutCloud, Eigen::Matrix4f &registration_matrix)
 {
-	if (source_point_cloud->points.size() > 10000)
-		DownSample(source_point_cloud);
-	if (target_point_cloud->points.size() > 10000)
-		DownSample(target_point_cloud);
-	pcl::IterativeClosestPoint<pcl::PointXYZRGBA, pcl::PointXYZRGBA> icp;
-	icp.setInputSource(source_point_cloud);
-	icp.setInputTarget(target_point_cloud);
-	pcl::PointCloud<pcl::PointXYZRGBA> Final;
-	icp.align(Final);
-	cout << "has converged:" << icp.hasConverged() << " score: " <<
-		icp.getFitnessScore() << endl;
-	cout << icp.getFinalTransformation() << endl;
-	pcl::transformPointCloud(*source_point_cloud, *OutCloud, icp.getFinalTransformation());
-	registration_matrix = icp.getFinalTransformation();
+    if (source_point_cloud->points.size() > 10000)
+        DownSample(source_point_cloud);
+    if (target_point_cloud->points.size() > 10000)
+        DownSample(target_point_cloud);
+    pcl::IterativeClosestPoint<pcl::PointXYZRGBA, pcl::PointXYZRGBA> icp;
+    icp.setInputSource(source_point_cloud);
+    icp.setInputTarget(target_point_cloud);
+    pcl::PointCloud<pcl::PointXYZRGBA> Final;
+    icp.align(Final);
+    cout << "has converged:" << icp.hasConverged() << " score: " <<
+         icp.getFitnessScore() << endl;
+    cout << icp.getFinalTransformation() << endl;
+    pcl::transformPointCloud(*source_point_cloud, *OutCloud, icp.getFinalTransformation());
+    registration_matrix = icp.getFinalTransformation();
 }
 
 void method_sac_icp(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr OutCloud, Eigen::Matrix4f &registration_matrix)
 {
-	double sourcepoint_leafsize;
-	compute_pointcloud_density(source_point_cloud, sourcepoint_leafsize);
-	double targetpoint_leafsize;
-	compute_pointcloud_density(target_point_cloud, targetpoint_leafsize);
-	vector<int> indices_src; //±£´æÈ¥³ıµÄµãµÄË÷Òı
-	pcl::removeNaNFromPointCloud(*source_point_cloud, *source_point_cloud, indices_src);
-	cout << "remove *source_point_cloud nan" << endl;
-	//ÏÂ²ÉÑùÂË²¨
-	pcl::VoxelGrid<pcl::PointXYZRGBA> voxel_grid;
-	voxel_grid.setLeafSize(sourcepoint_leafsize*2, sourcepoint_leafsize * 2, sourcepoint_leafsize * 2);
-	voxel_grid.setInputCloud(source_point_cloud);
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_src(new pcl::PointCloud<pcl::PointXYZRGBA>);
-	//pcl::PointCloud::Ptr cloud_src(new PointCloud);
-	voxel_grid.filter(*cloud_src);
-	cout << "down size *source_point_cloud from " << source_point_cloud->size() << "to" << cloud_src->size() << endl;
-	//¼ÆËã±íÃæ·¨Ïß
-	pcl::NormalEstimation<pcl::PointXYZRGBA, pcl::Normal> ne_src;
-	ne_src.setInputCloud(cloud_src);
-	pcl::search::KdTree< pcl::PointXYZRGBA>::Ptr tree_src(new pcl::search::KdTree< pcl::PointXYZRGBA>());
-	ne_src.setSearchMethod(tree_src);
-	pcl::PointCloud<pcl::Normal>::Ptr cloud_src_normals(new pcl::PointCloud< pcl::Normal>);
-	ne_src.setRadiusSearch(sourcepoint_leafsize * 6);
-	ne_src.compute(*cloud_src_normals);
+    double sourcepoint_leafsize;
+    compute_pointcloud_density(source_point_cloud, sourcepoint_leafsize);
+    double targetpoint_leafsize;
+    compute_pointcloud_density(target_point_cloud, targetpoint_leafsize);
+    vector<int> indices_src; //ä¿å­˜å»é™¤çš„ç‚¹çš„ç´¢å¼•
+    pcl::removeNaNFromPointCloud(*source_point_cloud, *source_point_cloud, indices_src);
+    cout << "remove *source_point_cloud nan" << endl;
+    //ä¸‹é‡‡æ ·æ»¤æ³¢
+    pcl::VoxelGrid<pcl::PointXYZRGBA> voxel_grid;
+    voxel_grid.setLeafSize(sourcepoint_leafsize*2, sourcepoint_leafsize * 2, sourcepoint_leafsize * 2);
+    voxel_grid.setInputCloud(source_point_cloud);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_src(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    //pcl::PointCloud::Ptr cloud_src(new PointCloud);
+    voxel_grid.filter(*cloud_src);
+    cout << "down size *source_point_cloud from " << source_point_cloud->size() << "to" << cloud_src->size() << endl;
+    //è®¡ç®—è¡¨é¢æ³•çº¿
+    pcl::NormalEstimation<pcl::PointXYZRGBA, pcl::Normal> ne_src;
+    ne_src.setInputCloud(cloud_src);
+    pcl::search::KdTree< pcl::PointXYZRGBA>::Ptr tree_src(new pcl::search::KdTree< pcl::PointXYZRGBA>());
+    ne_src.setSearchMethod(tree_src);
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_src_normals(new pcl::PointCloud< pcl::Normal>);
+    ne_src.setRadiusSearch(sourcepoint_leafsize * 6);
+    ne_src.compute(*cloud_src_normals);
 
-	vector<int> indices_tgt;
-	pcl::removeNaNFromPointCloud(*target_point_cloud, *target_point_cloud, indices_tgt);
-	cout << "remove *target_point_cloud nan" << endl;
+    vector<int> indices_tgt;
+    pcl::removeNaNFromPointCloud(*target_point_cloud, *target_point_cloud, indices_tgt);
+    cout << "remove *target_point_cloud nan" << endl;
 
-	pcl::VoxelGrid<pcl::PointXYZRGBA> voxel_grid_2;
-	voxel_grid_2.setLeafSize(targetpoint_leafsize * 2, targetpoint_leafsize * 2, targetpoint_leafsize * 2);
-	voxel_grid_2.setInputCloud(target_point_cloud);
+    pcl::VoxelGrid<pcl::PointXYZRGBA> voxel_grid_2;
+    voxel_grid_2.setLeafSize(targetpoint_leafsize * 2, targetpoint_leafsize * 2, targetpoint_leafsize * 2);
+    voxel_grid_2.setInputCloud(target_point_cloud);
 
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_tgt(new pcl::PointCloud<pcl::PointXYZRGBA>);
-	voxel_grid_2.filter(*cloud_tgt);
-	cout << "down size *target_point_cloud.pcd from " << target_point_cloud->size() << "to" << cloud_tgt->size() << endl;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_tgt(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    voxel_grid_2.filter(*cloud_tgt);
+    cout << "down size *target_point_cloud.pcd from " << target_point_cloud->size() << "to" << cloud_tgt->size() << endl;
 
-	pcl::NormalEstimation<pcl::PointXYZRGBA, pcl::Normal> ne_tgt;
-	ne_tgt.setInputCloud(cloud_tgt);
-	pcl::search::KdTree< pcl::PointXYZRGBA>::Ptr tree_tgt(new pcl::search::KdTree< pcl::PointXYZRGBA>());
-	ne_tgt.setSearchMethod(tree_tgt);
-	pcl::PointCloud<pcl::Normal>::Ptr cloud_tgt_normals(new pcl::PointCloud< pcl::Normal>);
-	//ne_tgt.setKSearch(20);
-	ne_tgt.setRadiusSearch(targetpoint_leafsize * 6);
-	ne_tgt.compute(*cloud_tgt_normals);
+    pcl::NormalEstimation<pcl::PointXYZRGBA, pcl::Normal> ne_tgt;
+    ne_tgt.setInputCloud(cloud_tgt);
+    pcl::search::KdTree< pcl::PointXYZRGBA>::Ptr tree_tgt(new pcl::search::KdTree< pcl::PointXYZRGBA>());
+    ne_tgt.setSearchMethod(tree_tgt);
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_tgt_normals(new pcl::PointCloud< pcl::Normal>);
+    //ne_tgt.setKSearch(20);
+    ne_tgt.setRadiusSearch(targetpoint_leafsize * 6);
+    ne_tgt.compute(*cloud_tgt_normals);
 
-	//¼ÆËãFPFH
-	pcl::FPFHEstimation<pcl::PointXYZRGBA, pcl::Normal, pcl::FPFHSignature33> fpfh_src;
-	fpfh_src.setInputCloud(cloud_src);
-	fpfh_src.setInputNormals(cloud_src_normals);
-	pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree_src_fpfh(new pcl::search::KdTree<pcl::PointXYZRGBA>);
-	fpfh_src.setSearchMethod(tree_src_fpfh);
-	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_src(new pcl::PointCloud<pcl::FPFHSignature33>());
-	fpfh_src.setRadiusSearch(sourcepoint_leafsize * 10);
-	fpfh_src.compute(*fpfhs_src);
-	cout << "compute *cloud_src fpfh" << endl;
+    //è®¡ç®—FPFH
+    pcl::FPFHEstimation<pcl::PointXYZRGBA, pcl::Normal, pcl::FPFHSignature33> fpfh_src;
+    fpfh_src.setInputCloud(cloud_src);
+    fpfh_src.setInputNormals(cloud_src_normals);
+    pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree_src_fpfh(new pcl::search::KdTree<pcl::PointXYZRGBA>);
+    fpfh_src.setSearchMethod(tree_src_fpfh);
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_src(new pcl::PointCloud<pcl::FPFHSignature33>());
+    fpfh_src.setRadiusSearch(sourcepoint_leafsize * 10);
+    fpfh_src.compute(*fpfhs_src);
+    cout << "compute *cloud_src fpfh" << endl;
 
-	pcl::FPFHEstimation<pcl::PointXYZRGBA, pcl::Normal, pcl::FPFHSignature33> fpfh_tgt;
-	fpfh_tgt.setInputCloud(cloud_tgt);
-	fpfh_tgt.setInputNormals(cloud_tgt_normals);
-	pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree_tgt_fpfh(new pcl::search::KdTree<pcl::PointXYZRGBA>);
-	fpfh_tgt.setSearchMethod(tree_tgt_fpfh);
-	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_tgt(new pcl::PointCloud<pcl::FPFHSignature33>());
-	fpfh_tgt.setRadiusSearch(targetpoint_leafsize * 10);
-	fpfh_tgt.compute(*fpfhs_tgt);
-	cout << "compute *cloud_tgt fpfh" << endl;
+    pcl::FPFHEstimation<pcl::PointXYZRGBA, pcl::Normal, pcl::FPFHSignature33> fpfh_tgt;
+    fpfh_tgt.setInputCloud(cloud_tgt);
+    fpfh_tgt.setInputNormals(cloud_tgt_normals);
+    pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree_tgt_fpfh(new pcl::search::KdTree<pcl::PointXYZRGBA>);
+    fpfh_tgt.setSearchMethod(tree_tgt_fpfh);
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_tgt(new pcl::PointCloud<pcl::FPFHSignature33>());
+    fpfh_tgt.setRadiusSearch(targetpoint_leafsize * 10);
+    fpfh_tgt.compute(*fpfhs_tgt);
+    cout << "compute *cloud_tgt fpfh" << endl;
 
-	//SACÅä×¼
-	pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGBA, pcl::PointXYZRGBA, pcl::FPFHSignature33> scia;
-	scia.setInputSource(cloud_src);
-	scia.setInputTarget(cloud_tgt);
-	scia.setSourceFeatures(fpfhs_src);
-	scia.setTargetFeatures(fpfhs_tgt);
-	//scia.setMinSampleDistance(1);
-	//scia.setNumberOfSamples(2);
-	scia.setNumberOfSamples(20);
-	scia.setRANSACIterations(30);
-	scia.setRANSACOutlierRejectionThreshold(targetpoint_leafsize * 10);
-	//scia.setCorrespondenceRandomness(20);
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr sac_result(new pcl::PointCloud<pcl::PointXYZRGBA>);
-	//PointCloud::Ptr sac_result(new PointCloud);
-	scia.align(*sac_result);
-	cout << "sac has converged:" << scia.hasConverged() << "  score: " << scia.getFitnessScore() << endl;
-	Eigen::Matrix4f sac_trans;
-	sac_trans = scia.getFinalTransformation();
-	cout << sac_trans << endl;
-	clock_t sac_time = clock();
+    //SACé…å‡†
+    pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGBA, pcl::PointXYZRGBA, pcl::FPFHSignature33> scia;
+    scia.setInputSource(cloud_src);
+    scia.setInputTarget(cloud_tgt);
+    scia.setSourceFeatures(fpfhs_src);
+    scia.setTargetFeatures(fpfhs_tgt);
+    //scia.setMinSampleDistance(1);
+    //scia.setNumberOfSamples(2);
+    scia.setNumberOfSamples(20);
+    scia.setRANSACIterations(30);
+    scia.setRANSACOutlierRejectionThreshold(targetpoint_leafsize * 10);
+    //scia.setCorrespondenceRandomness(20);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr sac_result(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    //PointCloud::Ptr sac_result(new PointCloud);
+    scia.align(*sac_result);
+    cout << "sac has converged:" << scia.hasConverged() << "  score: " << scia.getFitnessScore() << endl;
+    Eigen::Matrix4f sac_trans;
+    sac_trans = scia.getFinalTransformation();
+    cout << sac_trans << endl;
+    clock_t sac_time = clock();
 
-	//icpÅä×¼
-	pcl::IterativeClosestPoint<pcl::PointXYZRGBA, pcl::PointXYZRGBA> icp;
-	icp.setMaxCorrespondenceDistance(0.04);
-	// ×î´óµü´ú´ÎÊı
-	icp.setMaximumIterations(50);
-	// Á½´Î±ä»¯¾ØÕóÖ®¼äµÄ²îÖµ
-	icp.setTransformationEpsilon(1e-10);
-	// ¾ù·½Îó²î
-	icp.setEuclideanFitnessEpsilon(0.2);
-	icp.setInputSource(sac_result);
-	icp.setInputTarget(cloud_tgt);
-	pcl::PointCloud<pcl::PointXYZRGBA> Final;
-	icp.align(Final);
-	cout << "has converged:" << icp.hasConverged() << " score: " <<
-		icp.getFitnessScore() << endl;
-	cout << icp.getFinalTransformation() << endl;
-	Eigen::Matrix4f icp_trans= icp.getFinalTransformation();
-	pcl::transformPointCloud(*source_point_cloud, *OutCloud, icp_trans*sac_trans);
-	registration_matrix = icp_trans * sac_trans;
+    //icpé…å‡†
+    pcl::IterativeClosestPoint<pcl::PointXYZRGBA, pcl::PointXYZRGBA> icp;
+    icp.setMaxCorrespondenceDistance(0.04);
+    // æœ€å¤§è¿­ä»£æ¬¡æ•°
+    icp.setMaximumIterations(50);
+    // ä¸¤æ¬¡å˜åŒ–çŸ©é˜µä¹‹é—´çš„å·®å€¼
+    icp.setTransformationEpsilon(1e-10);
+    // å‡æ–¹è¯¯å·®
+    icp.setEuclideanFitnessEpsilon(0.2);
+    icp.setInputSource(sac_result);
+    icp.setInputTarget(cloud_tgt);
+    pcl::PointCloud<pcl::PointXYZRGBA> Final;
+    icp.align(Final);
+    cout << "has converged:" << icp.hasConverged() << " score: " <<
+         icp.getFitnessScore() << endl;
+    cout << icp.getFinalTransformation() << endl;
+    Eigen::Matrix4f icp_trans= icp.getFinalTransformation();
+    pcl::transformPointCloud(*source_point_cloud, *OutCloud, icp_trans*sac_trans);
+    registration_matrix = icp_trans * sac_trans;
 }
-//Åä×¼  Õâ¸öµØ·½¿ÉÒÔ»»¶àÖÖ·½·¨
+//é…å‡†  è¿™ä¸ªåœ°æ–¹å¯ä»¥æ¢å¤šç§æ–¹æ³•
 void registration(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud, const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr OutCloud, Eigen::Matrix4f &registration_matrix, int method)
 {
-	clock_t registration_start = clock();
-	switch (method) {
-	case 0: {
-		cout << "choose icp method" << endl;
-		method_icp(source_point_cloud, target_point_cloud, OutCloud,registration_matrix);
-		break;
-	}
-	case 1: {
-		cout << "choose sac_icp method" << endl;
-		method_sac_icp(source_point_cloud, target_point_cloud, OutCloud,registration_matrix);
-		break;
-	}
-	default: {
-		cout << "no this method" << endl;
-		break;
-	}
-	}
-	clock_t registration_end = clock();
-	cout << "registartiond time: " << (double)(registration_end - registration_start) / (double)CLOCKS_PER_SEC << " s" << endl;
+    clock_t registration_start = clock();
+    switch (method) {
+        case 0: {
+            cout << "choose icp method" << endl;
+            method_icp(source_point_cloud, target_point_cloud, OutCloud,registration_matrix);
+            break;
+        }
+        case 1: {
+            cout << "choose sac_icp method" << endl;
+            method_sac_icp(source_point_cloud, target_point_cloud, OutCloud,registration_matrix);
+            break;
+        }
+        default: {
+            cout << "no this method" << endl;
+            break;
+        }
+    }
+    clock_t registration_end = clock();
+    cout << "registartiond time: " << (double)(registration_end - registration_start) / (double)CLOCKS_PER_SEC << " s" << endl;
 }
 
 
 int
- main (int argc, char** argv)
+main (int argc, char** argv)
 {
-	if (argc < 3)
-	{
-		PCL_ERROR("ÊäÈë±äÁ¿ÊıÁ¿²»×ã£¡\n");
-		printUsage(argv[0]);
-		return (0);
-	}
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª	
-  //¶¨ÒåÊäÈëµÄÁ½¸öµãÔÆ
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // Ô´µãÔÆ
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // Ä¿±êµãÔÆ
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª	
-  //¶ÁÈ¡ÊäÈëµÄÁ½¸öµãÔÆ
-  read_pointcloud(source_point_cloud, target_point_cloud, argc, argv);
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //½ø³ÌËø
-  source_point_cloud_mutex.lock();
-  target_point_cloud_mutex.lock();
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //ÏÔÊ¾µãÔÆ
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer1(new pcl::visualization::PCLVisualizer("viewer1"));
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer2(new pcl::visualization::PCLVisualizer("viewer2"));
-  //sourceµãÔÆ´°¿Ú
-  viewer1->setBackgroundColor(255, 255, 255);//ÉèÖÃ±³¾°É«Îª°×É«
-  viewer1->addText("source_point_cloud_image", 10, 10,1.0,0.0,0.0);
-  viewer1->addPointCloud(source_point_cloud,"source_point_cloud");
-  //viewer1->addCoordinateSystem(1.0); //¼ÓÈë×ø±êÖá
-  //targetµãÔÆ´°¿Ú
-  viewer2->setBackgroundColor(255, 255, 255);//ÉèÖÃ±³¾°É«Îª°×É«
-  viewer2->addText("target_point_cloud_image", 10, 10, 1.0, 0.0, 0.0);
-  viewer2->addPointCloud(target_point_cloud, "target_point_cloud");
-  //viewer2->addCoordinateSystem(1.0);
+    if (argc < 3)
+    {
+        PCL_ERROR("è¾“å…¥å˜é‡æ•°é‡ä¸è¶³ï¼\n");
+        printUsage(argv[0]);
+        return (0);
+    }
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //å®šä¹‰è¾“å…¥çš„ä¸¤ä¸ªç‚¹äº‘
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // æºç‚¹äº‘
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr target_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // ç›®æ ‡ç‚¹äº‘
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //è¯»å–è¾“å…¥çš„ä¸¤ä¸ªç‚¹äº‘
+    read_pointcloud(source_point_cloud, target_point_cloud, argc, argv);
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //è¿›ç¨‹é”
+    source_point_cloud_mutex.lock();
+    target_point_cloud_mutex.lock();
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //æ˜¾ç¤ºç‚¹äº‘
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer1(new pcl::visualization::PCLVisualizer("viewer1"));
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer2(new pcl::visualization::PCLVisualizer("viewer2"));
+    //sourceç‚¹äº‘çª—å£
+    viewer1->setBackgroundColor(255, 255, 255);//è®¾ç½®èƒŒæ™¯è‰²ä¸ºç™½è‰²
+    viewer1->addText("source_point_cloud_image", 10, 10,1.0,0.0,0.0);
+    viewer1->addPointCloud(source_point_cloud,"source_point_cloud");
+    //viewer1->addCoordinateSystem(1.0); //åŠ å…¥åæ ‡è½´
+    //targetç‚¹äº‘çª—å£
+    viewer2->setBackgroundColor(255, 255, 255);//è®¾ç½®èƒŒæ™¯è‰²ä¸ºç™½è‰²
+    viewer2->addText("target_point_cloud_image", 10, 10, 1.0, 0.0, 0.0);
+    viewer2->addPointCloud(target_point_cloud, "target_point_cloud");
+    //viewer2->addCoordinateSystem(1.0);
 
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  // Ñ¡µã
-  struct callback_args cb_args1;
-  struct callback_args cb_args2;
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d1(new pcl::PointCloud<pcl::PointXYZRGBA>);
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d2(new pcl::PointCloud<pcl::PointXYZRGBA>);
-  cb_args1.clicked_points_3d = clicked_points_3d1;
-  cb_args2.clicked_points_3d = clicked_points_3d2;
-  cb_args1.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(viewer1);
-  cb_args2.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(viewer2);
-  viewer1->registerPointPickingCallback(pairpointselect_callback, (void*)&cb_args1);  //×¢²áÆÁÄ»Ñ¡µãÊÂ¼ş
-  viewer2->registerPointPickingCallback(pairpointselect_callback, (void*)&cb_args2);  //×¢²áÆÁÄ»Ñ¡µãÊÂ¼ş
-  //Shfit+Êó±ê×ó¼üÑ¡Ôñµã
-  cout << "Shift+click on four corresponding points,then press 'Enter'..." << endl;//Shfit+Êó±ê×ó¼üÑ¡Ôñµã,°´¡°Enter¡±¼ü½áÊø
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //ÊÍ·Å»¥³âÌå
-  source_point_cloud_mutex.unlock();
-  target_point_cloud_mutex.unlock();
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //¼ì²â¼üÅÌÊäÈë
-  int ch = 0;//¼ì²â¼üÅÌÊäÈë¼üÖµ
-  while (!viewer1->wasStopped())
-  {
-	  viewer1->spinOnce(100);   //100??
-	  viewer2->spinOnce(100);
-	  boost::this_thread::sleep(boost::posix_time::microseconds(100000));
-	  if (_kbhit()) {//Èç¹ûÓĞ°´¼ü°´ÏÂ£¬Ôò_kbhit()º¯Êı·µ»ØÕæ
-		  ch = _getch();//Ê¹ÓÃ_getch()º¯Êı»ñÈ¡°´ÏÂµÄ¼üÖµ
-	  }
-	  if (ch == 13) { break; }//µ±°´ÏÂEnterÊ±Í£Ö¹Ñ­»·£¬Enter¼üµÄ¼üÎª13.
-  }
-  ch = 0;//¼ì²â¼üÅÌÊäÈë¼üÖµ
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //ÀûÓÃ¶ÔÓ¦µã½øĞĞ×ø±ê±ä»»
-  cout << "source_point_cloud select " << cb_args1.clicked_points_3d->points.size() << " corresponding points" << endl;
-  cout << "target_point_cloud select " << cb_args2.clicked_points_3d->points.size() << " corresponding points" << endl;
-  int correspond_point_number = 4;
-  //ÀûÓÃSVD·½·¨Çó½â±ä»»¾ØÕó  
-  pcl::registration::TransformationEstimationSVD<pcl::PointXYZRGBA, pcl::PointXYZRGBA> TESVD;
-  pcl::registration::TransformationEstimationSVD<pcl::PointXYZRGBA, pcl::PointXYZRGBA>::Matrix4 correspond_transformation;
-  TESVD.estimateRigidTransformation(*cb_args1.clicked_points_3d, *cb_args2.clicked_points_3d, correspond_transformation);
-  //Êä³ö±ä»»¾ØÕóĞÅÏ¢  
-  cout << "The Estimated Rotation and translation matrices (using getTransformation function) are : \n" << endl;
-  printf("\n");
-  printf("    | %6.3f %6.3f %6.3f | \n", correspond_transformation(0, 0), correspond_transformation(0, 1), correspond_transformation(0, 2));
-  printf("R = | %6.3f %6.3f %6.3f | \n", correspond_transformation(1, 0), correspond_transformation(1, 1), correspond_transformation(1, 2));
-  printf("    | %6.3f %6.3f %6.3f | \n", correspond_transformation(2, 0), correspond_transformation(2, 1), correspond_transformation(2, 2));
-  printf("\n");
-  printf("t = < %0.3f, %0.3f, %0.3f >\n", correspond_transformation(0, 3), correspond_transformation(1, 3), correspond_transformation(2, 3));
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr trans_source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
-  pcl::transformPointCloud(*source_point_cloud, *trans_source_point_cloud, correspond_transformation);
-  //ÏÔÊ¾¸ù¾İ¶ÔÓ¦µã±ä»»ºóµÄµãÔÆ
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer3(new pcl::visualization::PCLVisualizer("¶ÔÓ¦ºóµãÔÆÅä×¼Ç°ºó¿ÉÊÓ»¯"));
-  int v1(0);
-  int v2(0);
-  viewer3->createViewPort(0.0, 0.0, 0.5, 1.0, v1);//(Xmin,Ymin,Xmax,Ymax)ÉèÖÃ²»Í¬ÊÓ½Ç´°¿Ú×ø±ê
-  viewer3->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
-  viewer3->setBackgroundColor(255, 255, 255, v1);//ÉèÖÃ±³¾°É«Îª°×É«
-  viewer3->setBackgroundColor(255, 255, 255, v2);//ÉèÖÃ±³¾°É«Îª°×É«
-  viewer3->addText("correspond_transform_cloud_image", 10, 10,1.0,0.0,0.0, "v1 text",v1);
-  viewer3->addText("final_transform_cloud_image", 10, 10, 1.0, 0.0, 0.0, "v2 text", v2);
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA>  trans_source_point_cloud_handler(trans_source_point_cloud, 255, 255, 0);//»ÆÉ«
-  viewer3->addPointCloud(trans_source_point_cloud, trans_source_point_cloud_handler, "trans_source_point_cloud",v1);
-  viewer3->addPointCloud(target_point_cloud,  "target_point_cloud", v1); //°´ÕÕÔ­ÑÕÉ«ÏÔÊ¾µãÔÆ
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //Õâ¿éÈç¹û´òËãÏÈÏÔÊ¾×ªÒÆºóµÄÍÃ×Ó¾ØÕó¾Í¿ÉÒÔ½â³ı×¢ÊÍ
-  /*
-  cout << "press 'Enter'to start registration" << endl;
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //¼ì²â¼üÅÌÊäÈë
-  while (!viewer3->wasStopped())
-  {
-	  viewer3->spinOnce(100);   //100??
-	  if (_kbhit()) {//Èç¹ûÓĞ°´¼ü°´ÏÂ£¬Ôò_kbhit()º¯Êı·µ»ØÕæ
-		  ch = _getch();//Ê¹ÓÃ_getch()º¯Êı»ñÈ¡°´ÏÂµÄ¼üÖµ
-	  }
-	  if (ch == 13) { break; }//µ±°´ÏÂEnterÊ±Í£Ö¹Ñ­»·£¬Enter¼üµÄ¼üÎª13.
-  }  
-  */
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //Åä×¼
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr OutCloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // Ä¿±êµãÔÆ
-  int method = 0;
-  if (argc == 4) {
-	  string methodname = argv[3];
-	  method = stoi(methodname);
-  }
-  Eigen::Matrix4f registration_matrix;
-  registration(trans_source_point_cloud, target_point_cloud, OutCloud,registration_matrix,method);
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr trans_registered_source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // ¾­¹ı±ä»»ºóµÄsourceµãÔÆ
-  pcl::transformPointCloud(*source_point_cloud, *trans_registered_source_point_cloud, registration_matrix*correspond_transformation);//pcl::transformPointCloudÊÇÓÒ³Ë£¬ËùÒÔÏÈÖÆĞĞµÄ¾ØÕó±ä»»Ğ´ÔÚÓÒ²à
-  //¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
-  //½«Åä×¼ºóµÄµãÔÆ¼ÓÈëÏÔÊ¾
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA>  Final_handler(OutCloud, 255, 255, 0);//»ÆÉ«
-  viewer3->addPointCloud(trans_registered_source_point_cloud, Final_handler, "trans_registered_source_point_cloud1", v2); //°´ÕÕÖ¸¶¨ÑÕÉ«ÏÔÊ¾±ä»»ºóµÄsourceµãÔÆ
-  viewer3->addPointCloud(target_point_cloud, "target_point_cloud1", v2); //°´ÕÕÔ­ÑÕÉ«ÏÔÊ¾targetµãÔÆ
-  while (!viewer3->wasStopped())
-  {
-	  viewer3->spinOnce(100);   //
-  }
- return (0);
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    // é€‰ç‚¹
+    struct callback_args cb_args1;
+    struct callback_args cb_args2;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d1(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clicked_points_3d2(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    cb_args1.clicked_points_3d = clicked_points_3d1;
+    cb_args2.clicked_points_3d = clicked_points_3d2;
+    cb_args1.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(viewer1);
+    cb_args2.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(viewer2);
+    viewer1->registerPointPickingCallback(pairpointselect_callback, (void*)&cb_args1);  //æ³¨å†Œå±å¹•é€‰ç‚¹äº‹ä»¶
+    viewer2->registerPointPickingCallback(pairpointselect_callback, (void*)&cb_args2);  //æ³¨å†Œå±å¹•é€‰ç‚¹äº‹ä»¶
+    //Shfit+é¼ æ ‡å·¦é”®é€‰æ‹©ç‚¹
+    cout << "Shift+click on four corresponding points,then press 'Enter'..." << endl;//Shfit+é¼ æ ‡å·¦é”®é€‰æ‹©ç‚¹,æŒ‰â€œEnterâ€é”®ç»“æŸ
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //é‡Šæ”¾äº’æ–¥ä½“
+    source_point_cloud_mutex.unlock();
+    target_point_cloud_mutex.unlock();
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //æ£€æµ‹é”®ç›˜è¾“å…¥
+    int ch = 0;//æ£€æµ‹é”®ç›˜è¾“å…¥é”®å€¼
+    while (!viewer1->wasStopped())
+    {
+        viewer1->spinOnce(100);   //100??
+        viewer2->spinOnce(100);
+        boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+        if (_kbhit()) {//å¦‚æœæœ‰æŒ‰é”®æŒ‰ä¸‹ï¼Œåˆ™_kbhit()å‡½æ•°è¿”å›çœŸ
+            ch = _getch();//ä½¿ç”¨_getch()å‡½æ•°è·å–æŒ‰ä¸‹çš„é”®å€¼
+        }
+        if (ch == 13) { break; }//å½“æŒ‰ä¸‹Enteræ—¶åœæ­¢å¾ªç¯ï¼ŒEnteré”®çš„é”®ä¸º13.
+    }
+    ch = 0;//æ£€æµ‹é”®ç›˜è¾“å…¥é”®å€¼
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //åˆ©ç”¨å¯¹åº”ç‚¹è¿›è¡Œåæ ‡å˜æ¢
+    cout << "source_point_cloud select " << cb_args1.clicked_points_3d->points.size() << " corresponding points" << endl;
+    cout << "target_point_cloud select " << cb_args2.clicked_points_3d->points.size() << " corresponding points" << endl;
+    int correspond_point_number = 4;
+    //åˆ©ç”¨SVDæ–¹æ³•æ±‚è§£å˜æ¢çŸ©é˜µ
+    pcl::registration::TransformationEstimationSVD<pcl::PointXYZRGBA, pcl::PointXYZRGBA> TESVD;
+    pcl::registration::TransformationEstimationSVD<pcl::PointXYZRGBA, pcl::PointXYZRGBA>::Matrix4 correspond_transformation;
+    TESVD.estimateRigidTransformation(*cb_args1.clicked_points_3d, *cb_args2.clicked_points_3d, correspond_transformation);
+    //è¾“å‡ºå˜æ¢çŸ©é˜µä¿¡æ¯
+    cout << "The Estimated Rotation and translation matrices (using getTransformation function) are : \n" << endl;
+    printf("\n");
+    printf("    | %6.3f %6.3f %6.3f | \n", correspond_transformation(0, 0), correspond_transformation(0, 1), correspond_transformation(0, 2));
+    printf("R = | %6.3f %6.3f %6.3f | \n", correspond_transformation(1, 0), correspond_transformation(1, 1), correspond_transformation(1, 2));
+    printf("    | %6.3f %6.3f %6.3f | \n", correspond_transformation(2, 0), correspond_transformation(2, 1), correspond_transformation(2, 2));
+    printf("\n");
+    printf("t = < %0.3f, %0.3f, %0.3f >\n", correspond_transformation(0, 3), correspond_transformation(1, 3), correspond_transformation(2, 3));
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr trans_source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    pcl::transformPointCloud(*source_point_cloud, *trans_source_point_cloud, correspond_transformation);
+    //æ˜¾ç¤ºæ ¹æ®å¯¹åº”ç‚¹å˜æ¢åçš„ç‚¹äº‘
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer3(new pcl::visualization::PCLVisualizer("å¯¹åº”åç‚¹äº‘é…å‡†å‰åå¯è§†åŒ–"));
+    int v1(0);
+    int v2(0);
+    viewer3->createViewPort(0.0, 0.0, 0.5, 1.0, v1);//(Xmin,Ymin,Xmax,Ymax)è®¾ç½®ä¸åŒè§†è§’çª—å£åæ ‡
+    viewer3->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
+    viewer3->setBackgroundColor(255, 255, 255, v1);//è®¾ç½®èƒŒæ™¯è‰²ä¸ºç™½è‰²
+    viewer3->setBackgroundColor(255, 255, 255, v2);//è®¾ç½®èƒŒæ™¯è‰²ä¸ºç™½è‰²
+    viewer3->addText("correspond_transform_cloud_image", 10, 10,1.0,0.0,0.0, "v1 text",v1);
+    viewer3->addText("final_transform_cloud_image", 10, 10, 1.0, 0.0, 0.0, "v2 text", v2);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA>  trans_source_point_cloud_handler(trans_source_point_cloud, 255, 255, 0);//é»„è‰²
+    viewer3->addPointCloud(trans_source_point_cloud, trans_source_point_cloud_handler, "trans_source_point_cloud",v1);
+    viewer3->addPointCloud(target_point_cloud,  "target_point_cloud", v1); //æŒ‰ç…§åŸé¢œè‰²æ˜¾ç¤ºç‚¹äº‘
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //è¿™å—å¦‚æœæ‰“ç®—å…ˆæ˜¾ç¤ºè½¬ç§»åçš„å…”å­çŸ©é˜µå°±å¯ä»¥è§£é™¤æ³¨é‡Š
+    /*
+    cout << "press 'Enter'to start registration" << endl;
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //æ£€æµ‹é”®ç›˜è¾“å…¥
+    while (!viewer3->wasStopped())
+    {
+        viewer3->spinOnce(100);   //100??
+        if (_kbhit()) {//å¦‚æœæœ‰æŒ‰é”®æŒ‰ä¸‹ï¼Œåˆ™_kbhit()å‡½æ•°è¿”å›çœŸ
+            ch = _getch();//ä½¿ç”¨_getch()å‡½æ•°è·å–æŒ‰ä¸‹çš„é”®å€¼
+        }
+        if (ch == 13) { break; }//å½“æŒ‰ä¸‹Enteræ—¶åœæ­¢å¾ªç¯ï¼ŒEnteré”®çš„é”®ä¸º13.
+    }
+    */
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //é…å‡†
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr OutCloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // ç›®æ ‡ç‚¹äº‘
+    int method = 0;
+    if (argc == 4) {
+        string methodname = argv[3];
+        method = stoi(methodname);
+    }
+    Eigen::Matrix4f registration_matrix;
+    registration(trans_source_point_cloud, target_point_cloud, OutCloud,registration_matrix,method);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr trans_registered_source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>); // ç»è¿‡å˜æ¢åçš„sourceç‚¹äº‘
+    pcl::transformPointCloud(*source_point_cloud, *trans_registered_source_point_cloud, registration_matrix*correspond_transformation);//pcl::transformPointCloudæ˜¯å³ä¹˜ï¼Œæ‰€ä»¥å…ˆåˆ¶è¡Œçš„çŸ©é˜µå˜æ¢å†™åœ¨å³ä¾§
+    //â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    //å°†é…å‡†åçš„ç‚¹äº‘åŠ å…¥æ˜¾ç¤º
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA>  Final_handler(OutCloud, 255, 255, 0);//é»„è‰²
+    viewer3->addPointCloud(trans_registered_source_point_cloud, Final_handler, "trans_registered_source_point_cloud1", v2); //æŒ‰ç…§æŒ‡å®šé¢œè‰²æ˜¾ç¤ºå˜æ¢åçš„sourceç‚¹äº‘
+    viewer3->addPointCloud(target_point_cloud, "target_point_cloud1", v2); //æŒ‰ç…§åŸé¢œè‰²æ˜¾ç¤ºtargetç‚¹äº‘
+    while (!viewer3->wasStopped())
+    {
+        viewer3->spinOnce(100);   //
+    }
+    return (0);
 }

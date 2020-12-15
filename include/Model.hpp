@@ -12,7 +12,7 @@ namespace RHCL {
 
     private:
         /* data */
-        std::vector<Link> _linkPtrGrp; //Save all the links of manipulator
+        std::vector<Link> _linkGrp; //Save all the links of manipulator
 
     public:
         Model(/* args */);
@@ -24,7 +24,7 @@ namespace RHCL {
          * 
          * @return int 
          */
-        inline int getLinkNum() const { return _linkPtrGrp.size(); }
+        inline int getLinkNum() const { return _linkGrp.size(); }
 
         /**
          * @brief Get the Point Cloud of current state
