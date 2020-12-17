@@ -1,0 +1,4 @@
+robotinfo:
+  - name: "link1"
+    parent: "link0"
+    mesh: "xxx.stl"

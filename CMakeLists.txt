@@ -34,6 +34,7 @@ find_package(OpenGL REQUIRED)
 
 # YAML-CPP
 find_package(yaml-cpp REQUIRED)
+message("yaml-cpp is ${YAML_CPP_INCLUDE_DIR}")
 
 include_directories(${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${PCL_LIBRARY_DIRS})
@@ -61,3 +62,7 @@ target_link_libraries(manual_registration ${LIBS})
 add_executable(test test/test.cpp ${SRC})
 target_include_directories(test PUBLIC include)
 target_link_libraries(test ${LIBS})
+
+add_executable(test_yaml test/test_yaml.cpp ${SRC})
+target_include_directories(test_yaml PUBLIC include)
+target_link_libraries(test_yaml ${LIBS})
