@@ -56,8 +56,8 @@ link_directories(${ASSIMP_LIBRARY_DIRS})
 
 
 # test
-add_executable(manual_registration test/manual_registration.cpp ${SRC})
-target_link_libraries(manual_registration ${LIBS})
+#add_executable(manual_registration test/manual_registration.cpp ${SRC})
+#target_link_libraries(manual_registration ${LIBS})
 
 add_executable(test test/test.cpp ${SRC})
 target_include_directories(test PUBLIC include)

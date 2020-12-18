@@ -8,7 +8,7 @@
 namespace RHCL {
     class Model {
     public:
-        typedef Link Link; //typedef in Model, so can be used as RHCL::Model::Link
+//        typedef Link Link; //typedef in Model, so can be used as RHCL::Model::Link
 
     private:
         /* data */

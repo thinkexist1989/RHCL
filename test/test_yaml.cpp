@@ -18,10 +18,16 @@ int main(int argc, char** argv)
     }
 
     YAML::Node info = config["robotinfo"];
+    assert(info.Type() == YAML::NodeType::Sequence);
 
-    std::cout << "\t name: " << info[0]["name"] << std::endl;
-    std::cout << "\t parent: " << info[0]["parent"] << std::endl;
-    std::cout << "\t mesh: " << info[0]["mesh"] << std::endl;
+    std::cout << "info size is: " << info.size() << std::endl;
+
+    for (int j = 0; j < info.size(); ++j) {
+        std::cout << " - ";
+        std::cout << "\t name: " << info[0]["name"] << std::endl;
+        std::cout << "\t parent: " << info[0]["parent"] << std::endl;
+        std::cout << "\t mesh: " << info[0]["mesh"] << std::endl;
+    }
 
     return 0;
 }
