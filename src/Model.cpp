@@ -12,6 +12,7 @@ namespace RHCL {
 
     Model::~Model() {
         delete[] _linkGrp;
+        delete[] _jntRads;
     }
 
     std::vector<Point> Model::getPointCloud() const {
@@ -30,13 +31,15 @@ namespace RHCL {
        _linkGrp[order] = link;
     }
 
-    Model::Model(std::string &fileName) {
+    Model::Model(const std::string& fileName) {
         getModelFromYamlFile(fileName);
     }
 
-    void Model::getModelFromYamlFile(std::string &fileName) {
+    void Model::getModelFromYamlFile(const std::string &fileName) {
         //parse yaml file
-        YAML::Node config = YAML::LoadFile("../res/config.yaml");
+        YAML::Node config = YAML::LoadFile(fileName);
+
+        std::string dir = fileName.substr(0, fileName.find_last_of('/'));
 
         if(config["robot"].IsDefined()) {
             std::cout << "robot info: " << std::endl;
@@ -49,7 +52,8 @@ namespace RHCL {
         std::cout << "robot freedom is " << info.size() - 1 << std::endl;
 
         _freedom = info.size() - 1; // The robot's freedom
-        _linkGrp = new Link[_freedom + 1]; // the link is _freedom + 1, because of the base link
+        _linkGrp = new Link[_freedom + 1]; // the link is _freedom + 1, because of the base link4
+        _jntRads = new double[_freedom];
 
         for (int j = 0; j < info.size(); ++j) {
             _linkGrp[j].setName(info[j]["name"].as<std::string>()); //set name
@@ -70,6 +74,8 @@ namespace RHCL {
                                          info[j]["angleAxis"][1].as<int>(),
                                          info[j]["angleAxis"][2].as<int>());
 
+            _linkGrp[j].setPointCloud(dir+'/'+info[j]["mesh"].as<std::string>());
+
             std::cout << " - ";
             std::cout << "\t name: " << info[j]["name"] << std::endl;
             std::cout << "\t order: " << info[j]["order"].as<int>() << std::endl;
@@ -81,7 +87,7 @@ namespace RHCL {
                 std::cout << "\t angleAxis: " << info[j]["angleAxis"][0].as<int>()
                           << ", " << info[j]["angleAxis"][1].as<int>()
                           << ", " << info[j]["angleAxis"][2].as<int>() << std::endl;
-            std::cout << "\t mesh: " << info[j]["mesh"] << std::endl;
+            std::cout << "\t mesh: " << info[j]["mesh"]  << " size: " << _linkGrp[j].getPointCloudCount() << std::endl;
         }
     }
 

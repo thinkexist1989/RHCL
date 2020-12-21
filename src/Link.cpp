@@ -6,6 +6,7 @@
 
 #include <boost/make_shared.hpp>
 #include <iostream>
+#include <string>
 
 namespace RHCL {
 
@@ -37,9 +38,6 @@ namespace RHCL {
             std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
             return false;
         }
-
-        _directory = fileName.substr(0, fileName.find_last_of('/'));
-        std::cout << "Link _directory is: " << _directory << std::endl;
 
         processNode(scene->mRootNode, scene);
         return true;
@@ -78,6 +76,8 @@ namespace RHCL {
     }
 
     void Link::setPointCloud(const std::string &fileName) {
+        _directory = fileName.substr(0, fileName.find_last_of('/'));
+        std::cout << "The directory is " << _directory << std::endl;
         loadAsset(fileName); //load mesh
     }
 }

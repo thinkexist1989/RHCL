@@ -13,6 +13,7 @@ namespace RHCL {
     private:
         /* data */
         Link* _linkGrp; //Save all the links of manipulator
+        double* _jntRads; // Save the joint state (radians)
         int _freedom = 0;
 
     public:
@@ -20,11 +21,11 @@ namespace RHCL {
          *
          * @param fileName The yaml file
          */
-        Model(std::string& fileName);
+        Model(const std::string& fileName);
         
         ~Model();
 
-        void getModelFromYamlFile(std::string& fileName); // Load model from file
+        void getModelFromYamlFile(const std::string& fileName); // Load model from file
 
         void addLink(RHCL::Link link, int order);
 

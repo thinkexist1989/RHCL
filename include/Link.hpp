@@ -49,12 +49,17 @@ namespace RHCL {
         inline void setAngleAxis(int x, int y, int z) {angleAxis << x, y, z;}
         inline Eigen::Vector3i getAngleAxis() {return angleAxis;}
 
+        /**
+         * @details Generate the point cloud from mesh
+         * @param fileName
+         */
         void setPointCloud(const std::string& fileName);
+//        inline std::vector<Point> getPointCloud() const {return _pointCloud;} // get the point cloud
+        inline const std::vector<Point>& getPointCloud() const {return  _pointCloud;} //get the point cloud of link
+        inline const int getPointCloudCount() const { return _pointCloud.size();} //Get the size of the point cloud
 
 
         bool loadAsset(const std::string &fileName); //load 3D format CAD file
-
-        inline const std::vector<Point>& getPointCloud() const {return  _pointCloud;} //get the point cloud of link
 
         Link& operator=(Link &b); //overload assignment
     private:
