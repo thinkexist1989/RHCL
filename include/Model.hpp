@@ -3,7 +3,7 @@
 
 #include "Link.hpp"
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "yaml-cpp/yaml.h"
 
 namespace RHCL {
     class Model {
@@ -12,19 +12,28 @@ namespace RHCL {
 
     private:
         /* data */
-        std::vector<Link> _linkGrp; //Save all the links of manipulator
+        Link* _linkGrp; //Save all the links of manipulator
+        int _freedom = 0;
 
     public:
-        Model(/* args */);
+        /**
+         *
+         * @param fileName The yaml file
+         */
+        Model(std::string& fileName);
         
         ~Model();
+
+        void getModelFromYamlFile(std::string& fileName); // Load model from file
+
+        void addLink(RHCL::Link link, int order);
 
         /**
          * @brief Get the number of links
          * 
          * @return int 
          */
-        inline int getLinkNum() const { return _linkGrp.size(); }
+        inline int getFreedom() const { return _freedom; }
 
         /**
          * @brief Get the Point Cloud of current state

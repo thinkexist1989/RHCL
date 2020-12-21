@@ -10,13 +10,23 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <Eigen/Dense>
+
 namespace RHCL {
     class Link {
     private:
         /* data */
         std::vector<Point> _pointCloud; //store the point cloud of this link
 
-        std::string directory; // the directory of CAD file
+        std::string _directory; // the _directory of CAD file
+
+        int _order = 0; //the _order of the link
+
+        std::string _name; // the name of the link
+
+        Eigen::Vector3d translate; //translate relative to previous link
+        Eigen::Vector3d rotate; // rotate relative to previous link
+        Eigen::Vector3i angleAxis; // angle-axis format
     public:
         Link(/* args */);
 
@@ -24,10 +34,29 @@ namespace RHCL {
 
         ~Link();
 
+        inline void setName(const std::string& name) {_name = name;}
+        inline std::string getName() {return _name;}
+
+        inline void setOrder(int order) {_order = order;}
+        inline int getOrder() {return _order;}
+
+        inline void setTranslate(double x, double y, double z) {translate << x, y, z; }
+        inline Eigen::Vector3d getTranslate() {return translate;}
+
+        inline  void setRotate(double roll, double pitch, double yaw) {rotate << roll, pitch, yaw; }
+        inline Eigen::Vector3d getRotate() {return rotate;}
+
+        inline void setAngleAxis(int x, int y, int z) {angleAxis << x, y, z;}
+        inline Eigen::Vector3i getAngleAxis() {return angleAxis;}
+
+        void setPointCloud(const std::string& fileName);
+
+
         bool loadAsset(const std::string &fileName); //load 3D format CAD file
 
         inline const std::vector<Point>& getPointCloud() const {return  _pointCloud;} //get the point cloud of link
 
+        Link& operator=(Link &b); //overload assignment
     private:
         void processNode(aiNode *node, const aiScene *scene);
 

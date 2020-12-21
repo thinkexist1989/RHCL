@@ -38,8 +38,8 @@ namespace RHCL {
             return false;
         }
 
-        directory = fileName.substr(0, fileName.find_last_of('/'));
-        std::cout << "Link directory is: " << directory << std::endl;
+        _directory = fileName.substr(0, fileName.find_last_of('/'));
+        std::cout << "Link _directory is: " << _directory << std::endl;
 
         processNode(scene->mRootNode, scene);
         return true;
@@ -66,5 +66,18 @@ namespace RHCL {
             _pointCloud.push_back(p);
         }
 
+    }
+
+    Link &Link::operator=(Link &b) {
+        if(this == &b)
+            return *this;
+        this->_pointCloud = b._pointCloud;
+        this->_directory = b._directory;
+        this->_order = b._order;
+        return *this;
+    }
+
+    void Link::setPointCloud(const std::string &fileName) {
+        loadAsset(fileName); //load mesh
     }
 }
