@@ -8,19 +8,44 @@
 #include <boost/make_shared.hpp>
 #include <string>
 
+#include <Eigen/Geometry>
+#include <pcl/common/transforms.h>
+
 namespace RHCL {
 
     Model::~Model() {
-        delete[] _linkGrp;
-        delete[] _jntRads;
     }
 
-    std::vector<Point> Model::getPointCloud() const {
-        return std::vector<Point>();
+    PointCloudPtr Model::getPointCloud() {
+        return boost::make_shared<PointCloud>();
     }
 
-    std::vector<Point> Model::getPointCloud(std::vector<double> &JointRads) const {
-        return std::vector<Point>();
+    PointCloudPtr Model::getPointCloud(std::vector<double> &jointRads) {
+        if(jointRads.size() != _freedom) {
+            std::cout << "The joints number is not equal to the freedom." << std::endl;
+            return boost::make_shared<PointCloud>();
+        }
+
+        _jntRads[0] = 0;
+        for(int i = 0; i < jointRads.size(); i++) {
+            _jntRads[i + 1] = jointRads[i];
+        }
+
+        PointCloudPtr pc = boost::make_shared<PointCloud>();
+
+        for(int i = 0; i <= _freedom; i++) {
+            Eigen::Transform<double, 3, Eigen::Affine> t(Eigen::Scaling(0.001));
+            for(int j = 0; j <= i; j++) {
+                t *= Eigen::Translation3d(_linkGrp[j].getTranslate());
+                t *= Eigen::AngleAxisd(_jntRads[j],_linkGrp[j].getAngleAxis());
+            }
+
+            PointCloud pc_out;
+            pcl::transformPointCloud(*(_linkGrp[i].getPointCloud()), pc_out, t.matrix());
+            *pc += pc_out;
+        }
+
+        return pc;
     }
 
     void Model::addLink(RHCL::Link link, int order) {
@@ -52,8 +77,8 @@ namespace RHCL {
         std::cout << "robot freedom is " << info.size() - 1 << std::endl;
 
         _freedom = info.size() - 1; // The robot's freedom
-        _linkGrp = new Link[_freedom + 1]; // the link is _freedom + 1, because of the base link4
-        _jntRads = new double[_freedom];
+        _linkGrp.resize(_freedom + 1); // the link is _freedom + 1, because of the base link4
+        _jntRads.resize(_freedom + 1); // _jntRads[0] is always 0
 
         for (int j = 0; j < info.size(); ++j) {
             _linkGrp[j].setName(info[j]["name"].as<std::string>()); //set name

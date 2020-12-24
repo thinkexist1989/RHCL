@@ -6,6 +6,8 @@
 #include <iostream>
 #include "Model.hpp"
 #include "Link.hpp"
+#include <Eigen/Dense>
+#include <pcl/visualization/pcl_visualizer.h>
 
 int main(int argc, char** argv)
 {
@@ -22,6 +24,26 @@ int main(int argc, char** argv)
     std::cout << "robot freedom is " << info.size() - 1 << std::endl;
 
     RHCL::Model model("../res/config.yaml");
+
+    std::vector<double> jntRads = {0, 0, 0.51, 0, 0, 0};
+
+    RHCL::PointCloudPtr pc = model.getPointCloud(jntRads);
+
+    std::cout << "Point cloud size is: " << pc->size() << std::endl;
+
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer1(new pcl::visualization::PCLVisualizer("viewer1"));
+
+    //source点云窗口
+    viewer1->setBackgroundColor(255, 255, 255);//设置背景色为白色
+    viewer1->addText("source_point_cloud_image", 10, 10,1.0,0.0,0.0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> target_color(pc, 255, 0, 0);
+    viewer1->addPointCloud(pc, target_color, "source_point_cloud");
+
+    while (!viewer1->wasStopped())
+    {
+        viewer1->spinOnce(100);   //100??
+        boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+    }
 
 //    for (int j = 0; j < info.size(); ++j) {
 //        std::cout << " - ";

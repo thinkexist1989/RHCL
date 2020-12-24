@@ -1,7 +1,6 @@
 #ifndef LINK_H
 #define LINK_H
 
-#include "Point.hpp"
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -12,11 +11,17 @@
 
 #include <Eigen/Dense>
 
+#include <pcl/point_cloud.h> // pcl::PointCloud
+#include <pcl/point_types.h> // pcl::PointXYZRGBA
+
 namespace RHCL {
+    typedef pcl::PointCloud<pcl::PointXYZRGBA>::Ptr PointCloudPtr;
+    typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloud;
+
     class Link {
     private:
         /* data */
-        std::vector<Point> _pointCloud; //store the point cloud of this link
+        PointCloudPtr _pointCloud; //store the point cloud of this link
 
         std::string _directory; // the _directory of CAD file
 
@@ -26,7 +31,7 @@ namespace RHCL {
 
         Eigen::Vector3d translate; //translate relative to previous link
         Eigen::Vector3d rotate; // rotate relative to previous link
-        Eigen::Vector3i angleAxis; // angle-axis format
+        Eigen::Vector3d angleAxis; // angle-axis format
     public:
         Link(/* args */);
 
@@ -47,7 +52,7 @@ namespace RHCL {
         inline Eigen::Vector3d getRotate() {return rotate;}
 
         inline void setAngleAxis(int x, int y, int z) {angleAxis << x, y, z;}
-        inline Eigen::Vector3i getAngleAxis() {return angleAxis;}
+        inline Eigen::Vector3d getAngleAxis() {return angleAxis;}
 
         /**
          * @details Generate the point cloud from mesh
@@ -55,8 +60,8 @@ namespace RHCL {
          */
         void setPointCloud(const std::string& fileName);
 //        inline std::vector<Point> getPointCloud() const {return _pointCloud;} // get the point cloud
-        inline const std::vector<Point>& getPointCloud() const {return  _pointCloud;} //get the point cloud of link
-        inline const int getPointCloudCount() const { return _pointCloud.size();} //Get the size of the point cloud
+        inline pcl::PointCloud<pcl::PointXYZRGBA>::Ptr getPointCloud() const {return  _pointCloud;} //get the point cloud of link
+        inline const int getPointCloudCount() const { return _pointCloud->size();} //Get the size of the point cloud
 
 
         bool loadAsset(const std::string &fileName); //load 3D format CAD file

@@ -11,7 +11,10 @@
 namespace RHCL {
 
     Link::Link() {
-
+        translate << 0, 0, 0;
+        rotate << 0, 0, 0;
+        _pointCloud = boost::make_shared<PointCloud>(); //new pointCloud
+//        _pointCloud = new pcl::PointCloud<pcl::PointXYZRGBA>();
     }
 
     Link::~Link() {
@@ -32,7 +35,7 @@ namespace RHCL {
      */
     bool Link::loadAsset(const std::string &fileName) {
         Assimp::Importer importer;
-        const aiScene *scene = importer.ReadFile(fileName, aiProcess_Triangulate);
+        const aiScene *scene = importer.ReadFile(fileName, aiProcess_SplitLargeMeshes | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
@@ -56,12 +59,12 @@ namespace RHCL {
 
     void Link::processMesh(aiMesh *mesh, const aiScene *scene) {
         for (int i = 0; i < mesh->mNumVertices; ++i) {
-            Point p;
-            p.setX(mesh->mVertices[i].x);
-            p.setY(mesh->mVertices[i].y);
-            p.setZ(mesh->mVertices[i].z);
+            pcl::PointXYZRGBA p;
+            p.x = mesh->mVertices[i].x;
+            p.y = mesh->mVertices[i].y;
+            p.z = mesh->mVertices[i].z;
 
-            _pointCloud.push_back(p);
+            _pointCloud->push_back(p);
         }
 
     }

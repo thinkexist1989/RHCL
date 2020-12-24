@@ -12,8 +12,8 @@ namespace RHCL {
 
     private:
         /* data */
-        Link* _linkGrp; //Save all the links of manipulator
-        double* _jntRads; // Save the joint state (radians)
+        std::vector<Link> _linkGrp; //Save all the links of manipulator
+        std::vector<double> _jntRads; // Save the joint state (radians)
         int _freedom = 0;
 
     public:
@@ -41,14 +41,14 @@ namespace RHCL {
          * 
          * @return std::vector<Point> 
          */
-        std::vector<Point> getPointCloud() const;
+        PointCloudPtr getPointCloud();
 
         /**
          * @brief Get the Point Cloud of the specific state
-         * @param JointRads
+         * @param jointRads
          * @return
          */
-        std::vector<Point> getPointCloud(std::vector<double> &JointRads) const;
+        PointCloudPtr getPointCloud(std::vector<double> &jointRads);
     };
 
 } // namespace RHCL
