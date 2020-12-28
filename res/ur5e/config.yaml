@@ -1,0 +1,35 @@
+robot:
+  - name: base
+    order: 0
+    mesh: base.dae
+  - name: shoulder
+    order: 1
+    translate: [0.0, 163.0, 0.0]
+    angleAxis: [0, 1, 0]
+    mesh: shoulder.dae
+  - name: upperarm
+    order: 2
+    translate: [0.0, 0.0, 138.0]
+    angleAxis: [0, 0, 1]
+    mesh: upperarm.dae
+  - name: forearm
+    order: 3
+    translate: [0.0, 425.0, -131.0]
+    angleAxis: [0, 0, 1]
+    mesh: forearm.dae
+  - name: wrist1
+    order: 4
+    translate: [0.0, 392.0, 0.0]
+    angleAxis: [0, 0, 1]
+    mesh:  wrist1.dae
+  - name: wrist2
+    order: 5
+    translate: [0.0, 0.0, 127.0]
+    angleAxis: [0, 1, 0]
+    mesh: wrist2.dae
+  - name: wrist3
+    order: 6
+    translate: [0.0, 100.0, 0.0]
+    angleAxis: [0, 0, 1]
+    mesh: wrist3.dae
+
