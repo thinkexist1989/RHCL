@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv)
 {
-    YAML::Node config = YAML::LoadFile("../res/config.yaml");
+    YAML::Node config = YAML::LoadFile("../res/ur5e/config.yaml");
 
     if(config["robot"].IsDefined()) {
         std::cout << "robot info: " << std::endl;
@@ -23,9 +23,9 @@ int main(int argc, char** argv)
     std::cout << "info size is: " << info.size() << std::endl;
     std::cout << "robot freedom is " << info.size() - 1 << std::endl;
 
-    RHCL::Model model("../res/config.yaml");
+    RHCL::Model model("../res/ur5e/config.yaml");
 
-    std::vector<double> jntRads = {0, 0, 0.51, 0, 0, 0};
+    std::vector<double> jntRads = {0, 0, 0, 0, 0, 0};
 
     RHCL::PointCloudPtr pc = model.getPointCloud(jntRads);
 

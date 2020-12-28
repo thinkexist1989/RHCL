@@ -1,35 +1,40 @@
 robot:
-  - name: base
+  - name: link_0
     order: 0
-    mesh: base.dae
-  - name: shoulder
+    mesh: link_0.stl
+  - name: link_1
     order: 1
     translate: [0.0, 163.0, 0.0]
     angleAxis: [0, 1, 0]
-    mesh: shoulder.dae
-  - name: upperarm
+    mesh: link_1.stl
+  - name: link_2
     order: 2
     translate: [0.0, 0.0, 138.0]
     angleAxis: [0, 0, 1]
-    mesh: upperarm.dae
-  - name: forearm
+    mesh: link_2.stl
+  - name: link_3
     order: 3
     translate: [0.0, 425.0, -131.0]
     angleAxis: [0, 0, 1]
-    mesh: forearm.dae
-  - name: wrist1
+    mesh: link_3.stl
+  - name: link_4
     order: 4
     translate: [0.0, 392.0, 0.0]
     angleAxis: [0, 0, 1]
-    mesh:  wrist1.dae
-  - name: wrist2
+    mesh:  link_4.stl
+  - name: link_5
     order: 5
     translate: [0.0, 0.0, 127.0]
     angleAxis: [0, 1, 0]
-    mesh: wrist2.dae
-  - name: wrist3
+    mesh: link_5.stl
+  - name: link_6
     order: 6
     translate: [0.0, 100.0, 0.0]
     angleAxis: [0, 0, 1]
-    mesh: wrist3.dae
+    mesh: link_6.stl
+  - name: link_7
+    order: 7
+    translate: [ 0.0, 100.0, 0.0 ]
+    angleAxis: [ 0, 0, 1 ]
+    mesh: link_7.stl
 

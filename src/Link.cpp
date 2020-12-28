@@ -35,7 +35,7 @@ namespace RHCL {
      */
     bool Link::loadAsset(const std::string &fileName) {
         Assimp::Importer importer;
-        const aiScene *scene = importer.ReadFile(fileName, aiProcess_SplitLargeMeshes | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+        const aiScene *scene = importer.ReadFile(fileName, aiProcess_FlipWindingOrder);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;

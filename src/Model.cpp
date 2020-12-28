@@ -34,9 +34,12 @@ namespace RHCL {
         PointCloudPtr pc = boost::make_shared<PointCloud>();
 
         for(int i = 0; i <= _freedom; i++) {
-            Eigen::Transform<double, 3, Eigen::Affine> t(Eigen::Scaling(0.001));
+            Eigen::Transform<double, 3, Eigen::Affine> t(Eigen::Scaling(1.0));
             for(int j = 0; j <= i; j++) {
                 t *= Eigen::Translation3d(_linkGrp[j].getTranslate());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[0], Eigen::Vector3d::UnitX());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[1], Eigen::Vector3d::UnitY());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[2], Eigen::Vector3d::UnitZ());
                 t *= Eigen::AngleAxisd(_jntRads[j],_linkGrp[j].getAngleAxis());
             }
 
