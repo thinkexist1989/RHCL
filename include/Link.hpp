@@ -29,9 +29,12 @@ namespace RHCL {
 
         std::string _name; // the name of the link
 
-        Eigen::Vector3d translate; //translate relative to previous link
-        Eigen::Vector3d rotate; // rotate relative to previous link
+        Eigen::Vector3d translate; //translate relative to previous joint
+        Eigen::Vector3d rotate; // rotate relative to previous joint
         Eigen::Vector3d angleAxis; // angle-axis format
+
+        Eigen::Vector3d translateLink; //translate the link
+        Eigen::Vector3d rotateLink;
     public:
         Link(/* args */);
 
@@ -53,6 +56,12 @@ namespace RHCL {
 
         inline void setAngleAxis(int x, int y, int z) {angleAxis << x, y, z;}
         inline Eigen::Vector3d getAngleAxis() {return angleAxis;}
+
+        inline void setTranslateLink(double x, double y, double z) {translateLink << x, y, z; }
+        inline Eigen::Vector3d getTranslateLink() {return translateLink;}
+
+        inline  void setRotateLink(double roll, double pitch, double yaw) {rotateLink << roll, pitch, yaw; }
+        inline Eigen::Vector3d getRotateLink() {return rotateLink;}
 
         /**
          * @details Generate the point cloud from mesh

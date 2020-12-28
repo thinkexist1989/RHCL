@@ -37,10 +37,19 @@ namespace RHCL {
             Eigen::Transform<double, 3, Eigen::Affine> t(Eigen::Scaling(1.0));
             for(int j = 0; j <= i; j++) {
                 t *= Eigen::Translation3d(_linkGrp[j].getTranslate());
-                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[0], Eigen::Vector3d::UnitX());
-                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[1], Eigen::Vector3d::UnitY());
+
                 t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[2], Eigen::Vector3d::UnitZ());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[1], Eigen::Vector3d::UnitY());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotate()[0], Eigen::Vector3d::UnitX());
+
                 t *= Eigen::AngleAxisd(_jntRads[j],_linkGrp[j].getAngleAxis());
+
+                t *= Eigen::Translation3d(_linkGrp[j].getTranslateLink());
+
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[2], Eigen::Vector3d::UnitZ());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[1], Eigen::Vector3d::UnitY());
+                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[0], Eigen::Vector3d::UnitX());
+
             }
 
             PointCloud pc_out;
@@ -101,6 +110,16 @@ namespace RHCL {
                 _linkGrp[j].setAngleAxis(info[j]["angleAxis"][0].as<int>(),
                                          info[j]["angleAxis"][1].as<int>(),
                                          info[j]["angleAxis"][2].as<int>());
+
+            if(info[j]["translateLink"].IsDefined())
+                _linkGrp[j].setTranslateLink(info[j]["translateLink"][0].as<double>(),
+                                         info[j]["translateLink"][1].as<double>(),
+                                         info[j]["translateLink"][2].as<double>());
+
+            if(info[j]["rotateLink"].IsDefined())
+                _linkGrp[j].setRotateLink(info[j]["rotateLink"][0].as<double>(),
+                                         info[j]["rotateLink"][1].as<double>(),
+                                          info[j]["rotateLink"][2].as<double>());
 
             _linkGrp[j].setPointCloud(dir+'/'+info[j]["mesh"].as<std::string>());
 
