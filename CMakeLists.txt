@@ -66,6 +66,11 @@ endif (WIN32)
 
 #link_directories(${ASSIMP_LIBRARY_DIRS})
 
+# add shared library
+add_library(RHCL SHARED ${SRC})
+add_library(RHCL::RHCL ALIAS RHCL)
+target_link_libraries(RHCL PUBLIC ${LIBS})
+
 
 # test
 #add_executable(manual_registration test/manual_registration.cpp ${SRC})
@@ -79,6 +84,5 @@ add_executable(test_yaml test/test_yaml.cpp ${SRC})
 target_include_directories(test_yaml PUBLIC include)
 target_link_libraries(test_yaml ${LIBS})
 
-add_executable(test_kinect test/test_kinect.cpp ${SRC})
-target_include_directories(test_kinect PUBLIC include)
-target_link_libraries(test_kinect ${LIBS})
+add_executable(test_kinect test/test_kinect.cpp)
+target_link_libraries(test_kinect RHCL::RHCL)
