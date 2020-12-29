@@ -14,14 +14,20 @@ endif ()
 
 project(RHCL)
 
+# Enable C++11 standard
+#set(CMAKE_CXX_STANDARD 11)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# set ${freenect2_DIR} to let cmake find freenect2, then ${freenect2_INCLUDE_DIR} and ${freenect2_LIBRARIES}
+set(freenect2_DIR /home/think/freenect2/lib/cmake/freenect2)
+
 # PCL
-find_package(PCL 1.2 CONFIG QUIET REQUIRED COMPONENTS common io registration visualization)
-# find_package(PCL 1.2 REQUIRED)
+#find_package(PCL 1.2 CONFIG QUIET REQUIRED COMPONENTS common io registration visualization)
+find_package(PCL 1.2 REQUIRED)
 
 # Qt5
 find_package(Qt5 COMPONENTS Widgets Network Xml OpenGL REQUIRED)
@@ -34,15 +40,21 @@ find_package(OpenGL REQUIRED)
 
 # YAML-CPP
 find_package(yaml-cpp REQUIRED)
-message("yaml-cpp is ${YAML_CPP_INCLUDE_DIR}")
+#message("yaml-cpp is ${YAML_CPP_INCLUDE_DIR}")
 
-include_directories(${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# freenect2
+find_package(freenect2 REQUIRED)
+
+# OpenCV
+find_package(OpenCV REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-set(LIBS Qt5::Widgets Qt5::Network Qt5::Xml Qt5::OpenGL ${YAML_CPP_LIBRARIES} ${ASSIMP_LIBRARIES} ${PCL_LIBRARIES})
+set(LIBS Qt5::Widgets Qt5::Network Qt5::Xml Qt5::OpenGL ${YAML_CPP_LIBRARIES} ${ASSIMP_LIBRARIES} ${PCL_LIBRARIES} ${freenect2_LIBRARIES} ${OpenCV_LIBS})
 
-file(GLOB SRC "src/*.cpp") #添加src目录下所有源文件
+file(GLOB SRC "src/*.cpp" "include/*.hpp") #添加src目录下所有源文件
 
 if (WIN32)
     set(LIBS ${LIBS} OpenGL::GL) #注意，windows下import target只有OpenGL::GL
@@ -52,7 +64,7 @@ else ()
     set(LIBS)
 endif (WIN32)
 
-link_directories(${ASSIMP_LIBRARY_DIRS})
+#link_directories(${ASSIMP_LIBRARY_DIRS})
 
 
 # test
@@ -66,3 +78,7 @@ target_link_libraries(test ${LIBS})
 add_executable(test_yaml test/test_yaml.cpp ${SRC})
 target_include_directories(test_yaml PUBLIC include)
 target_link_libraries(test_yaml ${LIBS})
+
+add_executable(test_kinect test/test_kinect.cpp ${SRC})
+target_include_directories(test_kinect PUBLIC include)
+target_link_libraries(test_kinect ${LIBS})
