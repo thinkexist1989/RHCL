@@ -23,7 +23,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # set ${freenect2_DIR} to let cmake find freenect2, then ${freenect2_INCLUDE_DIR} and ${freenect2_LIBRARIES}
-set(freenect2_DIR /home/think/freenect2/lib/cmake/freenect2)
+set(freenect2_DIR $ENV{HOME}/freenect2/lib/cmake/freenect2)
 
 # PCL
 #find_package(PCL 1.2 CONFIG QUIET REQUIRED COMPONENTS common io registration visualization)

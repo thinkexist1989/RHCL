@@ -44,13 +44,19 @@ namespace RHCL {
 
                 t *= Eigen::AngleAxisd(_jntRads[j],_linkGrp[j].getAngleAxis());
 
-                t *= Eigen::Translation3d(_linkGrp[j].getTranslateLink());
-
-                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[2], Eigen::Vector3d::UnitZ());
-                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[1], Eigen::Vector3d::UnitY());
-                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[0], Eigen::Vector3d::UnitX());
+//                t *= Eigen::Translation3d(_linkGrp[j].getTranslateLink());
+//
+//                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[2], Eigen::Vector3d::UnitZ());
+//                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[1], Eigen::Vector3d::UnitY());
+//                t *= Eigen::AngleAxisd(_linkGrp[j].getRotateLink()[0], Eigen::Vector3d::UnitX());
 
             }
+
+            t *= Eigen::Translation3d(_linkGrp[i].getTranslateLink());
+
+            t *= Eigen::AngleAxisd(_linkGrp[i].getRotateLink()[2], Eigen::Vector3d::UnitZ());
+            t *= Eigen::AngleAxisd(_linkGrp[i].getRotateLink()[1], Eigen::Vector3d::UnitY());
+            t *= Eigen::AngleAxisd(_linkGrp[i].getRotateLink()[0], Eigen::Vector3d::UnitX());
 
             PointCloud pc_out;
             pcl::transformPointCloud(*(_linkGrp[i].getPointCloud()), pc_out, t.matrix());
