@@ -19,10 +19,10 @@ using namespace RHCL;
 
 struct PlySaver{
 
-    PlySaver(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud, bool binary, bool use_camera, K2G & k2g):
+    PlySaver(pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud, bool binary, bool use_camera, K2G & k2g):
             cloud_(cloud), binary_(binary), use_camera_(use_camera), k2g_(k2g){}
 
-    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_;
+    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_;
     bool binary_;
     bool use_camera_;
     K2G & k2g_;
@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
         freenectprocessor = static_cast<Processor>(atoi(argv[1]));
     }
 
-    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud;
+    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud;
     K2G k2g(freenectprocessor);
     std::cout << "getting cloud" << std::endl;
     cloud = k2g.getCloud();
@@ -82,7 +82,7 @@ int main(int argc, char * argv[])
     cloud->sensor_orientation_.y() = 0.0;
     cloud->sensor_orientation_.z() = 0.0;
 
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer ("3D Viewer"));
+    pcl::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer ("3D Viewer"));
     viewer->setBackgroundColor (0, 0, 0);
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
     viewer->addPointCloud<pcl::PointXYZRGB>(cloud, rgb, "sample cloud");
@@ -108,6 +108,7 @@ int main(int argc, char * argv[])
         pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
         viewer->updatePointCloud<pcl::PointXYZRGB> (cloud, rgb, "sample cloud");
 
+        //std::this_thread::sleep_for(std::chrono::milliseconds(100000));
     }
 
     k2g.shutDown();

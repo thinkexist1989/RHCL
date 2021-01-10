@@ -5,7 +5,7 @@
 #include "Model.hpp"
 
 #include <iostream>
-#include <boost/make_shared.hpp>
+//#include <boost/make_shared.hpp>
 #include <string>
 
 #include <Eigen/Geometry>
@@ -17,13 +17,13 @@ namespace RHCL {
     }
 
     PointCloudPtr Model::getPointCloud() {
-        return boost::make_shared<PointCloud>();
+        return pcl::make_shared<PointCloud>();
     }
 
     PointCloudPtr Model::getPointCloud(std::vector<double> &jointRads) {
         if(jointRads.size() != _freedom) {
             std::cout << "The joints number is not equal to the freedom." << std::endl;
-            return boost::make_shared<PointCloud>();
+            return pcl::make_shared<PointCloud>();
         }
 
         _jntRads[0] = 0;
@@ -31,7 +31,7 @@ namespace RHCL {
             _jntRads[i + 1] = jointRads[i];
         }
 
-        PointCloudPtr pc = boost::make_shared<PointCloud>();
+        PointCloudPtr pc = pcl::make_shared<PointCloud>();
 
         for(int i = 0; i <= _freedom; i++) {
             Eigen::Transform<double, 3, Eigen::Affine> t(Eigen::Scaling(1.0));

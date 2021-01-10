@@ -2,7 +2,7 @@
 // Created by think on 2020/12/15.
 //
 
-//#include <conio.h>
+#include <conio.h>
 #include<vector>
 #include<iostream>
 #include<string>
@@ -30,8 +30,9 @@
 #include <pcl/features/fpfh.h>
 using namespace std;
 // Mutex: //进程锁
-boost::mutex source_point_cloud_mutex;
-boost::mutex target_point_cloud_mutex;
+std::mutex source_point_cloud_mutex;
+std::mutex target_point_cloud_mutex;
+
 
 void printUsage(const char* progName)
 {
@@ -319,8 +320,8 @@ main (int argc, char** argv)
     target_point_cloud_mutex.lock();
     //——————————————————————————————————————————————————————
     //显示点云
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer1(new pcl::visualization::PCLVisualizer("viewer1"));
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer2(new pcl::visualization::PCLVisualizer("viewer2"));
+    pcl::shared_ptr<pcl::visualization::PCLVisualizer> viewer1(new pcl::visualization::PCLVisualizer("viewer1"));
+    pcl::shared_ptr<pcl::visualization::PCLVisualizer> viewer2(new pcl::visualization::PCLVisualizer("viewer2"));
     //source点云窗口
     viewer1->setBackgroundColor(255, 255, 255);//设置背景色为白色
     viewer1->addText("source_point_cloud_image", 10, 10,1.0,0.0,0.0);
@@ -357,7 +358,7 @@ main (int argc, char** argv)
     {
         viewer1->spinOnce(100);   //100??
         viewer2->spinOnce(100);
-        boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+        std::this_thread::sleep_for(std::chrono::microseconds(100000));
         if (_kbhit()) {//如果有按键按下，则_kbhit()函数返回真
             ch = _getch();//使用_getch()函数获取按下的键值
         }
@@ -384,7 +385,7 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr trans_source_point_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::transformPointCloud(*source_point_cloud, *trans_source_point_cloud, correspond_transformation);
     //显示根据对应点变换后的点云
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer3(new pcl::visualization::PCLVisualizer("对应后点云配准前后可视化"));
+    pcl::shared_ptr<pcl::visualization::PCLVisualizer> viewer3(new pcl::visualization::PCLVisualizer("对应后点云配准前后可视化"));
     int v1(0);
     int v2(0);
     viewer3->createViewPort(0.0, 0.0, 0.5, 1.0, v1);//(Xmin,Ymin,Xmax,Ymax)设置不同视角窗口坐标

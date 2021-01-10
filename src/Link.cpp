@@ -15,7 +15,8 @@ namespace RHCL {
         rotate << 0, 0, 0;
         translateLink << 0, 0, 0;
         rotateLink << 0, 0, 0;
-        _pointCloud = boost::make_shared<PointCloud>(); //new pointCloud
+        _pointCloud = pcl::make_shared<PointCloud>(); //new pointCloud
+//        _pointCloud = boost::make_shared<PointCloud>();
 //        _pointCloud = new pcl::PointCloud<pcl::PointXYZRGBA>();
     }
 

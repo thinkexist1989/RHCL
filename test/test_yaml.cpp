@@ -42,7 +42,8 @@ int main(int argc, char** argv)
     while (!viewer1->wasStopped())
     {
         viewer1->spinOnce(100);   //100??
-        boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+        std::this_thread::sleep_for(std::chrono::microseconds(100000));
+//        std::this_thread::sleep(boost::posix_time::microseconds(100000));
     }
 
 //    for (int j = 0; j < info.size(); ++j) {
