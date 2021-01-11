@@ -77,7 +77,7 @@ namespace RHCL {
                         dev_ = freenect2_.openDevice(serial, new libfreenect2::CpuPacketPipeline());
                     std::cout << "created" << std::endl;
                     break;
-#ifdef WITH_OPENCL
+//#ifdef WITH_OPENCL
                     case OPENCL:
                         std::cout << "creating OpenCL processor" << std::endl;
                         if(serial.empty())
@@ -85,7 +85,7 @@ namespace RHCL {
                         else
                             dev_ = freenect2_.openDevice(serial, new libfreenect2::OpenCLPacketPipeline());
                         break;
-#endif
+//#endif
                 case OPENGL:
                     std::cout << "creating OpenGL processor" << std::endl;
                     if (serial.empty())
@@ -93,7 +93,7 @@ namespace RHCL {
                     else
                         dev_ = freenect2_.openDevice(serial, new libfreenect2::OpenGLPacketPipeline());
                     break;
-#ifdef WITH_CUDA
+//#ifdef WITH_CUDA
                     case CUDA:
                         std::cout << "creating Cuda processor" << std::endl;
                         if(serial.empty())
@@ -101,7 +101,7 @@ namespace RHCL {
                         else
                             dev_ = freenect2_.openDevice(serial, new libfreenect2::CudaPacketPipeline());
                         break;
-#endif
+//#endif
                 default:
                     std::cout << "creating Cpu processor" << std::endl;
                     if (serial_.empty())

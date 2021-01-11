@@ -26,7 +26,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if (UNIX AND NOT APPLE)
     set(freenect2_DIR $ENV{HOME}/freenect2/lib/cmake/freenect2)
 elseif(WIN32)
-    set(freenect2_DIR C:/libfreenect2/lib/cmake/freenect2)
+    set(freenect2_DIR C:/dev/libfreenect2/lib/cmake/freenect2)
 endif ()
 
 #Boost
@@ -57,6 +57,8 @@ message("yaml-cpp LIBS: ${YAML_CPP_LIBRARIES}")
 
 # freenect2
 find_package(freenect2 REQUIRED)
+message("freenect2 DIR: ${freenect2_INCLUDE_DIRS}")
+message("freenect2 LIBS: ${freenect2_LIBRARIES}")
 
 # OpenCV
 find_package(OpenCV REQUIRED)
