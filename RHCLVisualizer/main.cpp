@@ -4,17 +4,13 @@
 
 #include <QApplication>
 #include "RHCLVisualizer.h"
-#include "mywidget.h"
 
 int main(int argc, char** argv)
 {
     QApplication a(argc, argv);
 
-//    RHCLVisualizer rhclVisualizer;
-//    rhclVisualizer.show();
-
-    mywidget w;
-    w.show();
+    RHCLVisualizer rhclVisualizer;
+    rhclVisualizer.show();
 
     return  a.exec();
 }

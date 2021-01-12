@@ -18,18 +18,18 @@ RHCLVisualizer::RHCLVisualizer(QWidget *parent) :
         QMainWindow(parent), ui(new Ui::RHCLVisualizer) {
     ui->setupUi(this);
 
-//    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
-//
-//    vtkSmartPointer<vtkPolyDataMapper> sphereMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-//    sphereMapper->SetInputConnection(sphereSource->GetOutputPort());
-//
-//    vtkSmartPointer<vtkActor> sphereActor = vtkSmartPointer<vtkActor>::New();
-//    sphereActor->SetMapper(sphereMapper);
-//
-//    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-//    renderer->AddActor(sphereActor);
-//
-//    ui->vtkModelWidget->GetRenderWindow()->AddRenderer(renderer);
+    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
+
+    vtkSmartPointer<vtkPolyDataMapper> sphereMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    sphereMapper->SetInputConnection(sphereSource->GetOutputPort());
+
+    vtkSmartPointer<vtkActor> sphereActor = vtkSmartPointer<vtkActor>::New();
+    sphereActor->SetMapper(sphereMapper);
+
+    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+    renderer->AddActor(sphereActor);
+
+    ui->vtkModelWidget->GetRenderWindow()->AddRenderer(renderer);
 //    ui->vtkKinectWidget->GetRenderWindow()->AddRenderer(renderer);
 }
 
