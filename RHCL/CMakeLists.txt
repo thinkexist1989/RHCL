@@ -78,8 +78,8 @@ file(GLOB SRC "*.cpp" "*.c") #添加src目录下所有源文件
 #link_directories(${ASSIMP_LIBRARY_DIRS})
 
 # add shared library
-add_library(RHCL STATIC ${SRC})
+add_library(RHCL ${SRC})
 add_library(RHCL::RHCL ALIAS RHCL)
-target_include_directories(RHCL PUBLIC ${VTK_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_directories(RHCL PUBLIC ${ASSIMP_LIBRARY_DIRS})
+target_include_directories(RHCL PUBLIC ${VTK_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_directories(RHCL PUBLIC ${ASSIMP_LIBRARY_DIRS}) #assimp库${ASSIMP_LIBRARIES}是相对路径，因此在外部程序链接RHCL，若不知道Assimp库路径则找不到Assimp库
 target_link_libraries(RHCL PUBLIC ${ASSIMP_LIBRARIES} ${YAML_CPP_LIBRARIES} ${PCL_LIBRARIES} ${freenect2_LIBRARIES} ${OpenCV_LIBS})

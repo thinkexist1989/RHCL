@@ -2,7 +2,7 @@
 // Created by think on 12/29/20.
 //
 
-#include <k2g.hpp>
+#include <Camera.hpp>
 #include <pcl/visualization/cloud_viewer.h>
 #include <chrono>
 // extra headers for writing out ply file
@@ -19,13 +19,13 @@ using namespace RHCL;
 
 struct PlySaver{
 
-    PlySaver(pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud, bool binary, bool use_camera, K2G & k2g):
+    PlySaver(pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud, bool binary, bool use_camera, Camera & k2g):
             cloud_(cloud), binary_(binary), use_camera_(use_camera), k2g_(k2g){}
 
     pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_;
     bool binary_;
     bool use_camera_;
-    K2G & k2g_;
+    Camera & k2g_;
 };
 
 void KeyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void * data)
@@ -63,15 +63,15 @@ int main(int argc, char * argv[])
     std::cout << "Press \'s\' to store a cloud" << std::endl;
     std::cout << "Press \'x\' to store the calibrations." << std::endl;
 
-    Processor freenectprocessor = CUDA;
+    Camera::Processor freenectprocessor = Camera::CUDA;
     std::vector<int> ply_file_indices;
 
     if(argc > 1){
-        freenectprocessor = static_cast<Processor>(atoi(argv[1]));
+        freenectprocessor = static_cast<Camera::Processor>(atoi(argv[1]));
     }
 
     pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud;
-    K2G k2g(freenectprocessor);
+    Camera k2g(freenectprocessor);
     std::cout << "getting cloud" << std::endl;
     cloud = k2g.getCloud();
 

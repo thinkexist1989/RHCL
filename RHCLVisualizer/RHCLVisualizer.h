@@ -7,6 +7,18 @@
 
 #include <QMainWindow>
 
+// PCL
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/pcl_visualizer.h>
+
+// VTK
+#include <vtkRenderWindow.h>
+#include <vtkGenericOpenGLRenderWindow.h>
+
+typedef  pcl::PointXYZRGBA PointT;
+typedef pcl::PointCloud<PointT> PointCloudT;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class RHCLVisualizer; }
 QT_END_NAMESPACE
@@ -21,6 +33,14 @@ public:
 
 private:
     Ui::RHCLVisualizer *ui;
+
+protected:
+    pcl::visualization::PCLVisualizer::Ptr viewer;
+    vtkSmartPointer <vtkGenericOpenGLRenderWindow> renderWindow2;
+    PointCloudT::Ptr cloud;
+
+public slots:
+    void on_pushButton_clicked();
 };
 
 #endif //RHCL_RHCLVISUALIZER_H
