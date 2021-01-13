@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     }
 
     pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud;
-    Camera k2g(freenectprocessor);
+    Camera k2g(freenectprocessor, true);
     std::cout << "getting cloud" << std::endl;
     cloud = k2g.getCloud();
 
@@ -110,6 +110,8 @@ int main(int argc, char * argv[])
 
         //std::this_thread::sleep_for(std::chrono::milliseconds(100000));
     }
+
+    pcl::io::savePLYFile("xxxx.ply", *cloud);
 
     k2g.shutDown();
     return 0;

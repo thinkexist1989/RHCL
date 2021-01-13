@@ -15,10 +15,16 @@
 #include <vtkRenderer.h>
 
 #include <iostream>
+#include <QTimer>
+
+#include "myvtkopenglwidget.h"
 
 RHCLVisualizer::RHCLVisualizer(QWidget *parent) :
         QMainWindow(parent), ui(new Ui::RHCLVisualizer) {
     ui->setupUi(this);
+
+    ui->splitterH->setStretchFactor(0, 1);
+    ui->splitterH->setStretchFactor(1, 2);
 
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
 
@@ -47,46 +53,70 @@ RHCLVisualizer::RHCLVisualizer(QWidget *parent) :
         point.r = 128;
         point.g = 128;
         point.b = 128;
+        point.a = 255;
+
+        std::cout << point.x << point.y << point.z << std::endl;
     }
 
+    // Set up the QVTK window
+//    viewer.reset (new pcl::visualization::PCLVisualizer ("viewer", false));
+//    ui->vtkKinectWidget->SetRenderWindow (viewer->getRenderWindow ());
+//    viewer->setupInteractor (ui->vtkKinectWidget->GetInteractor (), ui->vtkKinectWidget->GetRenderWindow ());
+//    ui->vtkKinectWidget->update ();
+
+
+//    ui->vtkKinectWidget->populateCloud(cloud);
+
     auto renderer2 = vtkSmartPointer<vtkRenderer>::New();
-    renderer2->GradientBackgroundOn();
-    renderer2->SetBackground(0.27,0.27,0.27);
-    renderer2->SetBackground2(0.44,0.44,0.44);
+//    renderer2->GradientBackgroundOn();
+//    renderer2->SetBackground(0.27,0.27,0.27);
+//    renderer2->SetBackground2(0.44,0.44,0.44);
     renderWindow2 = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renderWindow2->AddRenderer(renderer2);
     viewer.reset(new pcl::visualization::PCLVisualizer(renderer2, renderWindow2, "viewer", false));
     ui->vtkKinectWidget->SetRenderWindow(viewer->getRenderWindow());
-
+//
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> target_color(cloud, 255, 0, 0);
 //    viewer->setupInteractor(ui->vtkKinectWidget->GetInteractor(), ui->vtkKinectWidget->GetRenderWindow());
 //    ui->vtkKinectWidget->update();
-
+//
     viewer->addPointCloud(cloud, "cloud");
-//    viewer->resetCamera();
-    renderWindow2->Render();
+    viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
+    viewer->resetCamera();
+//    renderWindow2->Render();
 
+    pcl::PointXYZ p;
+    p.x = 0; p.y = 0; p.z = 0;
+    viewer->addSphere(p, 100, "sphere1");
+
+    viewer->resetCamera();
     ui->vtkKinectWidget->update();
+
+//    timer = new QTimer(this);
+//    connect(timer, &QTimer::timeout, this, [=](){viewer->spinOnce(100); ui->vtkKinectWidget->update();});
+//    timer->start(100);
 }
 
 RHCLVisualizer::~RHCLVisualizer() {
     delete ui;
 }
 
-void RHCLVisualizer::on_pushButton_clicked() {
-    std::cout << cloud->size() << std::endl;
+//void RHCLVisualizer::on_pushButton_clicked() {
 
-    // Set the new color
-    for (auto& point: *cloud)
-    {
-        point.r = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-        point.g = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-        point.b = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-    }
-    viewer->spinOnce(100);
-    viewer->updatePointCloud (cloud, "cloud");
-    renderWindow2->Render();
+//    std::cout << cloud->size() << std::endl;
+//    std::cout << rand() << std::endl;
+//    // Set the new color
+//    for (auto& point: *cloud)
+//    {
+//        point.r = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+//        point.g = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+//        point.b = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+//    }
+
+////    ui->vtkKinectWidget->populateCloud(cloud);
+//////    viewer->spinOnce(100);
+//    viewer->updatePointCloud (cloud, "cloud");
+//    renderWindow2->Render(); //调用vtkGenericOpenGLWinows::Render()函数，才能实时更新
 //    ui->vtkKinectWidget->update ();
 
-
-}
+//}

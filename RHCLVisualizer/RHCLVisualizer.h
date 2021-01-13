@@ -36,11 +36,13 @@ private:
 
 protected:
     pcl::visualization::PCLVisualizer::Ptr viewer;
-    vtkSmartPointer <vtkGenericOpenGLRenderWindow> renderWindow2;
+    vtkSmartPointer<vtkRenderer> renderer2;
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow2;
     PointCloudT::Ptr cloud;
+    QTimer* timer;
 
 public slots:
-    void on_pushButton_clicked();
+//    void on_pushButton_clicked();
 };
 
 #endif //RHCL_RHCLVISUALIZER_H
