@@ -23,8 +23,8 @@ RHCLVisualizer::RHCLVisualizer(QWidget *parent) :
         QMainWindow(parent), ui(new Ui::RHCLVisualizer) {
     ui->setupUi(this);
 
-    ui->splitterH->setStretchFactor(0, 1);
-    ui->splitterH->setStretchFactor(1, 2);
+    ui->splitterH->setStretchFactor(0, 2);
+    ui->splitterH->setStretchFactor(1, 3);
 
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
 
