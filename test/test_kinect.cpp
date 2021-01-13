@@ -63,7 +63,7 @@ int main(int argc, char * argv[])
     std::cout << "Press \'s\' to store a cloud" << std::endl;
     std::cout << "Press \'x\' to store the calibrations." << std::endl;
 
-    Camera::Processor freenectprocessor = Camera::CUDA;
+    Camera::Processor freenectprocessor = Camera::OPENGL;
     std::vector<int> ply_file_indices;
 
     if(argc > 1){
