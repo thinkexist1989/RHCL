@@ -101,22 +101,22 @@ RHCLVisualizer::~RHCLVisualizer() {
     delete ui;
 }
 
-//void RHCLVisualizer::on_pushButton_clicked() {
+void RHCLVisualizer::on_pushButton_clicked() {
 
-//    std::cout << cloud->size() << std::endl;
-//    std::cout << rand() << std::endl;
-//    // Set the new color
-//    for (auto& point: *cloud)
-//    {
-//        point.r = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-//        point.g = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-//        point.b = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
-//    }
+    std::cout << cloud->size() << std::endl;
+    std::cout << rand() << std::endl;
+    // Set the new color
+    for (auto& point: *cloud)
+    {
+        point.r = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+        point.g = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+        point.b = 255 *(1024 * rand () / (RAND_MAX + 1.0f));
+    }
 
-////    ui->vtkKinectWidget->populateCloud(cloud);
-//////    viewer->spinOnce(100);
-//    viewer->updatePointCloud (cloud, "cloud");
-//    renderWindow2->Render(); //调用vtkGenericOpenGLWinows::Render()函数，才能实时更新
-//    ui->vtkKinectWidget->update ();
+//    ui->vtkKinectWidget->populateCloud(cloud);
+////    viewer->spinOnce(100);
+    viewer->updatePointCloud (cloud, "cloud");
+    renderWindow2->Render(); //调用vtkGenericOpenGLWinows::Render()函数，才能实时更新
+    ui->vtkKinectWidget->update ();
 
-//}
+}

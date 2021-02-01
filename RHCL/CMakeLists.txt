@@ -17,6 +17,11 @@ project(RHCL)
 # Enable C++11 standard
 set(CMAKE_CXX_STANDARD 11)
 
+# if use kinect fusion
+option(USE_KINECT_FUSION "If use Kinect Fusion in K4W" ON)
+set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
+
+
 # set ${freenect2_DIR} to let cmake find freenect2, then ${freenect2_INCLUDE_DIR} and ${freenect2_LIBRARIES}
 if (UNIX AND NOT APPLE)
     set(freenect2_DIR $ENV{HOME}/freenect2/lib/cmake/freenect2)
@@ -63,6 +68,15 @@ message("freenect2 LIBS: ${freenect2_LIBRARIES}")
 # OpenCV
 find_package(OpenCV REQUIRED)
 
+
+# Kinect SDK v2
+if (USE_KINECT_FUSION)
+    set(KinectSDK2_FUSION TRUE)
+    find_package(KinectSDK2 REQUIRED)
+    include_directories( ${KinectSDK2_INCLUDE_DIRS} )
+    link_directories( ${KinectSDK2_LIBRARY_DIRS} )
+endif ()
+
 #include_directories(${VTK_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
 
 #link_directories(${PCL_LIBRARY_DIRS} ${ASSIMP_LIBRARY_DIRS})
@@ -80,6 +94,6 @@ file(GLOB SRC "*.cpp" "*.c") #添加src目录下所有源文件
 # add shared library
 add_library(RHCL ${SRC})
 add_library(RHCL::RHCL ALIAS RHCL)
-target_include_directories(RHCL PUBLIC ${VTK_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(RHCL PUBLIC ${VTK_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${freenect2_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include ${KinectSDK2_INCLUDE_DIRS})
 target_link_directories(RHCL PUBLIC ${ASSIMP_LIBRARY_DIRS}) #assimp库${ASSIMP_LIBRARIES}是相对路径，因此在外部程序链接RHCL，若不知道Assimp库路径则找不到Assimp库
-target_link_libraries(RHCL PUBLIC ${ASSIMP_LIBRARIES} ${YAML_CPP_LIBRARIES} ${PCL_LIBRARIES} ${freenect2_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(RHCL PUBLIC ${ASSIMP_LIBRARIES} ${YAML_CPP_LIBRARIES} ${PCL_LIBRARIES} ${freenect2_LIBRARIES} ${OpenCV_LIBS} ${KinectSDK2_LIBRARIES})

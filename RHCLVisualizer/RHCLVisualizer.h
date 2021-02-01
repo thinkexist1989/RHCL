@@ -42,7 +42,7 @@ protected:
     QTimer* timer;
 
 public slots:
-//    void on_pushButton_clicked();
+    void on_pushButton_clicked();
 };
 
 #endif //RHCL_RHCLVISUALIZER_H
