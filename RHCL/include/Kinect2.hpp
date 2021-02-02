@@ -18,6 +18,19 @@ namespace RHCL {
     class Kinect2 {
         typedef pcl::PointXYZRGBA PointT;
         typedef pcl::PointCloud<PointT> PointCloudT;
+
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(p) { if (p) { delete (p); (p)=NULL; } }
+#endif
+
+#ifndef SAFE_DELETE_ARRAY
+#define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p); (p)=NULL; } }
+#endif
+
+#ifndef SAFE_FUSION_RELEASE_IMAGE_FRAME
+#define SAFE_FUSION_RELEASE_IMAGE_FRAME(p) { if (p) { static_cast<void>(NuiFusionReleaseImageFrame(p)); (p)=NULL; } }
+#endif
+
     public:
         enum Processor {
             CPU, GPU
@@ -29,18 +42,20 @@ namespace RHCL {
 
         void initialize(); //初始化函数，用于初始化Kinect摄像头
 
-
-
-
     private:
+        Processor processorType; //使用的处理器类型
+
+        /*=====设备======*/
         void initSensor(); //初始化Kinect传感器，获取kinect传感器接口
-        IKinectSensor *kienct; //Kinect传感器接口
+        IKinectSensor *kinect; //Kinect传感器接口
 
         ICoordinateMapper *coordinateMapper;
 
         /*=====彩色图像======*/
         void initColor(); //初始化彩色摄像头
-        void ColorUpdate();
+//        void ColorUpdate();
+
+        cv::Mat getColorImage(); //获取彩色图像
 
         IColorFrameReader *colorFrameReader; // color frame reader
         std::vector<BYTE> colorBuffer;
@@ -51,7 +66,9 @@ namespace RHCL {
 
         /*=====深度图像======*/
         void initDepth(); //初始化深度摄像头
-        void DepthUpdate();
+//        void DepthUpdate();
+
+        cv::Mat getDepthImage(); //获取深度图像
 
         IDepthFrameReader *depthFrameReader; // depth frame reader
         std::vector<UINT16> depthBuffer;
@@ -64,6 +81,8 @@ namespace RHCL {
         void initInfrared(); //初始化红外摄像头
         void InfraredUpdate();
 
+        cv::Mat getInfraredImage(); //获取红外图像
+
         IInfraredFrameReader *infraredFrameReader;
         std::vector<UINT16> infraredBuffer;
         int infraredWidth;
@@ -74,6 +93,8 @@ namespace RHCL {
         /*=====人体检测======*/
         void initBody(); //初始化身体摄像头
         void BodyUpdate();
+
+        cv::Mat getBodyImage(); //获取身体图像
 
         IBodyFrameReader *bodyFrameReader; // body frame reader
         cv::Mat bodyMat;
@@ -88,9 +109,11 @@ namespace RHCL {
         std::vector<ColorSpacePoint> depth2color; //深度图像映射到彩色图像的点 xy
 
         /*=====点云图像======*/
-        void initPointCloud();
+//        void initPointCloud();
 
         void PointCloudUpdate();
+
+        PointCloudT::Ptr getCloud(); // 获取点云
 
         PointCloudT::Ptr cloud; //点云显示
 
@@ -99,13 +122,15 @@ namespace RHCL {
 
         void FusionUpdate();
 
+        PointCloudT::Ptr getFusionCloud();
+
         INuiFusionColorReconstruction *colorReconstruction; //
         INuiFusionReconstruction *reconstruction; //
         INuiFusionMesh *mesh; //
 
         NUI_FUSION_RECONSTRUCTION_PARAMETERS reconstructionParameters; // 三维重建参数
         NUI_FUSION_CAMERA_PARAMETERS cameraParameters; // 相机内参参数
-        NUI_FUSION_RECONSTRUCTION_PROCESSOR_TYPE processorType; //处理器类型
+//        NUI_FUSION_RECONSTRUCTION_PROCESSOR_TYPE processorType; //处理器类型
         Matrix4 worldToCameraTransform; //FIXME: 世界到相机坐标系的变换？
 
         // These parameters are for optionally clipping the input depth image
@@ -126,6 +151,15 @@ namespace RHCL {
         void SetIdentityMatrix(Matrix4 &mat);
 
         PointCloudT::Ptr cloudMesh; //重建后的三维点云文件
+
+        // Safe release for interfaces
+        template<class Interface>
+        inline void safeRelease(Interface *&pInterfaceToRelease) {
+            if (pInterfaceToRelease != NULL) {
+                pInterfaceToRelease->Release();
+                pInterfaceToRelease = NULL;
+            }
+        }
 
     };
 
