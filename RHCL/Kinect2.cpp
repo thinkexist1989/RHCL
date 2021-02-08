@@ -3,6 +3,7 @@
 //
 
 #include "Kinect2.hpp"
+#include <omp.h>
 
 namespace RHCL {
 
@@ -37,7 +38,6 @@ namespace RHCL {
         initDepth(); //初始化深度图像
         initInfrared(); //初始化红外图像
         initBody(); //TODO: 初始化身体图像
-        initMapper();
 //        initPointCloud(); //TODO: 初始化点云
         initFusion();
 
@@ -253,7 +253,7 @@ namespace RHCL {
         IDepthFrame *depthFrame;
         HRESULT hr = depthFrameReader->AcquireLatestFrame(&depthFrame);
 
-        if(FAILED(hr)) {
+        if (FAILED(hr)) {
             std::cerr << "DepthFrameReader::AcquiredLatestFrame::Failed" << std::endl;
             return cv::Mat();
         }
@@ -267,5 +267,141 @@ namespace RHCL {
         return depthMat;
     }
 
+    Kinect2::PointCloudT::Ptr Kinect2::getCloud() {
+        getColorImage();
+        getDepthImage(); //先获取新的depthBuffer
+        std::vector<ColorSpacePoint> colorSpacePoint(depthWidth * depthHeight); //在彩色空间
+        coordinateMapper->MapDepthFrameToColorSpace(depthWidth*depthHeight,
+                                                    &depthBuffer[0],
+                                                     colorSpacePoint.size(),
+                                                    &colorSpacePoint[0]);
+
+
+
+        std::vector<CameraSpacePoint> cameraSpacePoints(depthWidth * depthHeight);
+        coordinateMapper->MapDepthFrameToCameraSpace(depthWidth * depthHeight, &depthBuffer[0],
+                                                     cameraSpacePoints.size(), &cameraSpacePoints[0]);
+        PointCloudT::Ptr cloud = pcl::make_shared<PointCloudT>();
+
+#pragma omp parallel for
+        for (int i = 0; i < cameraSpacePoints.size(); i++) {
+            cv::Vec3b color = colorMat.at<cv::Vec3b>(colorSpacePoint[i].Y, colorSpacePoint[i].X);
+            cloud->push_back(PointT(cameraSpacePoints[i].X,
+                                    cameraSpacePoints[i].Y,
+                                    cameraSpacePoints[i].Z,
+                                    color[0],
+                                    color[1],
+                                    color[2],
+                                    255));
+        }
+
+        return cloud;
+        //        return PointCloudT::Ptr();
+    }
+
+    Kinect2::PointCloudT::Ptr Kinect2::getFusionCloud() {
+        HRESULT hr = reconstruction->DepthToDepthFloatFrame(&depthBuffer[0], depthBuffer.size()*depthBytesPerPixel, floatDepthImage, fMinDepthThreshold, fMaxDepthThreshold, true); //最后一个参数是否镜像
+        if (FAILED(hr)) {
+            std::cout << "Kinect Fusion NuiFusionDepthToDepthFloatFrame call failed." << std::endl;
+            return nullptr;
+        }
+
+        hr = reconstruction->SmoothDepthFloatFrame(floatDepthImage, smoothDepthImage,
+                                                   NUI_FUSION_DEFAULT_SMOOTHING_KERNEL_WIDTH,
+                                                   NUI_FUSION_DEFAULT_SMOOTHING_DISTANCE_THRESHOLD);
+        if (FAILED(hr)) {
+            std::cout << "Kinect Fusion NuiFusionSmoothDepthFloatFrame call failed." << std::endl;
+            return nullptr;
+        }
+
+        hr = reconstruction->GetCurrentWorldToCameraTransform(&worldToCameraTransform);
+        if (FAILED(hr)) {
+            std::cout << "Kinect Fusion NuiFusionSmoothDepthFloatFrame call failed." << std::endl;
+            return nullptr;
+        }
+
+        /******处理Frame******/
+        hr = reconstruction->ProcessFrame(smoothDepthImage, NUI_FUSION_DEFAULT_ALIGN_ITERATION_COUNT,
+                                          NUI_FUSION_DEFAULT_INTEGRATION_WEIGHT,
+                                          nullptr,
+                                          &worldToCameraTransform);
+
+        if (FAILED(hr)) {
+            if (hr == E_NUI_FUSION_TRACKING_ERROR) {
+                lostFrameCounter++;
+                isTrackingFailed = true;
+                std::cout << "Kinect Fusion camera tracking failed! Align the camera to the last tracked position. " << std::endl;
+            } else {
+                std::cout << "Kinect Fusion ProcessFrame call failed!" << std::endl;
+                return nullptr;
+            }
+        } else {
+            Matrix4 calculatedCameraPose;
+            hr = reconstruction->GetCurrentWorldToCameraTransform(&calculatedCameraPose);
+
+            if (SUCCEEDED(hr)) {
+                // Set the pose
+                worldToCameraTransform = calculatedCameraPose;
+                lostFrameCounter = 0;
+                isTrackingFailed = false;
+            }
+        }
+
+        if (isTrackingFailed && lostFrameCounter >= 100) {
+
+            resetFusionCloud();
+
+            // Set bad tracking message
+            std::cout << "Kinect Fusion camera tracking failed, automatically reset volume." << std::endl;
+        }
+
+        /*=====计算点云======*/
+        hr = reconstruction->CalculatePointCloud(pointCloudImage, &worldToCameraTransform);
+        if (FAILED(hr)) {
+            std::cout << "Kinect Fusion CalculatePointCloud call failed." << std::endl;
+            return nullptr;
+        }
+
+        hr = NuiFusionShadePointCloud(pointCloudImage, &worldToCameraTransform, nullptr, surfaceImage, nullptr);
+        if (FAILED(hr))
+        {
+            std::cout << "Kinect Fusion NuiFusionShadePointCloud call failed." << std::endl;
+            return nullptr;
+        }
+
+        //可以用于显示
+        NUI_FUSION_BUFFER* surfaceImageFrameBuffer = surfaceImage->pFrameBuffer;
+        surfaceMat = cv::Mat(depthHeight, depthWidth, CV_8UC4, surfaceImageFrameBuffer->pBits);
+
+        reconstruction->CalculateMesh(1, &mesh);
+        const Vector3* vertices;
+        mesh->GetVertices(&vertices);
+
+        PointCloudT::Ptr fusionCloud = pcl::make_shared<PointCloudT>();
+
+#pragma omp parallel for
+        for(int i = 0; i < mesh->VertexCount(); i++) {
+            fusionCloud->push_back(PointT(vertices[i].x, vertices[i].y, vertices[i].z, 0, 0, 0, 0xFF));
+        }
+
+    }
+
+    void Kinect2::resetFusionCloud() {
+        SetIdentityMatrix(worldToCameraTransform);
+        HRESULT hr = reconstruction->ResetReconstruction(&worldToCameraTransform, nullptr);
+
+        if (FAILED(hr)) {
+            return;
+        }
+
+        lostFrameCounter = 0;
+    }
+
+    void Kinect2::SetIdentityMatrix(Matrix4 &mat) {
+        mat.M11 = 1;  mat.M12 = 0;  mat.M13 = 0;  mat.M14 = 0;
+        mat.M21 = 0;  mat.M22 = 1;  mat.M23 = 0;  mat.M24 = 0;
+        mat.M31 = 0;  mat.M32 = 0;  mat.M33 = 1;  mat.M34 = 0;
+        mat.M41 = 0;  mat.M42 = 0;  mat.M43 = 0;  mat.M44 = 1;
+    }
 
 }

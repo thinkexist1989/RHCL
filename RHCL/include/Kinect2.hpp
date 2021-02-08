@@ -100,18 +100,14 @@ namespace RHCL {
         cv::Mat bodyMat;
 
         /*=====图像空间映射======*/
-        void initMapper();
+//        void initMapper();
 
-        void MapperUpdate();
-
-        cv::Mat colorMappedMat; //color Mapped Mat
-        std::vector<DepthSpacePoint> color2depth; //彩色图像映射到深度空间的点 xy
-        std::vector<ColorSpacePoint> depth2color; //深度图像映射到彩色图像的点 xy
+//        cv::Mat colorMappedMat; //color Mapped Mat
+//        std::vector<DepthSpacePoint> color2depth; //彩色图像映射到深度空间的点 xy
+//        std::vector<ColorSpacePoint> depth2color; //深度图像映射到彩色图像的点 xy
 
         /*=====点云图像======*/
 //        void initPointCloud();
-
-        void PointCloudUpdate();
 
         PointCloudT::Ptr getCloud(); // 获取点云
 
@@ -122,7 +118,10 @@ namespace RHCL {
 
         void FusionUpdate();
 
-        PointCloudT::Ptr getFusionCloud();
+        PointCloudT::Ptr getFusionCloud(); //获取Kinect Fusion得到的点云
+        void resetFusionCloud();
+        void SetIdentityMatrix(Matrix4 &mat);
+
 
         INuiFusionColorReconstruction *colorReconstruction; //
         INuiFusionReconstruction *reconstruction; //
@@ -146,9 +145,6 @@ namespace RHCL {
         int lostFrameCounter = 0;
         bool isTrackingFailed = false;
 
-        void resetReconstruction();
-
-        void SetIdentityMatrix(Matrix4 &mat);
 
         PointCloudT::Ptr cloudMesh; //重建后的三维点云文件
 
