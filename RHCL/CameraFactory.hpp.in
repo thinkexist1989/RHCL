@@ -19,34 +19,34 @@ Shenyang Institute of Automation, Chinese Academy of Sciences.
  email: luoyang@sia.cn
 */
 
-//CameraBase是所有Camera的基类，定义操作接口
 
-#ifndef RHCL_PROJECT_CAMERABASE_HPP
-#define RHCL_PROJECT_CAMERABASE_HPP
+#ifndef RHCL_CAMERAFACTORY_HPP_IN
+#define RHCL_CAMERAFACTORY_HPP_IN
 
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
+#define KINECT_SDK @KINECT_SDK@
+
+#if (KINECT_SDK > 0)
+#include "MSKinect.hpp"
+#else
+
+#include "Freenect.hpp"
+
+#endif
+
+#include "ICamera.hpp"
 
 namespace RHCL {
-
-    class CameraBase {
+    class CameraFactory {
     public:
-        /** @brief 枚举处理器类型
-         * CPU, OPENCL, OPENGL, CUDA
-         */
-        enum Processor {
-            CPU, OPENCL, OPENGL, CUDA
-        };
-
-        CameraBase(Processor p = OPENGL, bool mirror = false);
-
-        virtual ~CameraBase() = 0; //纯虚析构函数，必须实现
-
-
-
-
+        static std::shared_ptr<ICamera> create(ICamera::Processor p = ICamera::OPENGL, bool mirror = false) {
+#if (KINECT_SDK)
+            return std::make_shared<MSKinect>(p, mirror);
+#else
+            return std::make_shared<Freeect>(p, mirror);
+#endif
+        }
     };
-
 }
 
-#endif //RHCL_PROJECT_CAMERABASE_HPP
+
+#endif //RHCL_CAMERAFACTORY_HPP_IN

@@ -13,3 +13,7 @@ target_link_libraries(test_yaml RHCL::RHCL)
 add_executable(test_kinect test_kinect.cpp)
 #target_include_directories(test_kinect PUBLIC ${INCLUDES})
 target_link_libraries(test_kinect RHCL::RHCL)
+
+add_executable(test_ICamera test_ICamera.cpp)
+#target_include_directories(test_ICamera PUBLIC ${CMAKE_BINARY_DIR})
+target_link_libraries(test_ICamera RHCL::RHCL)

@@ -1,0 +1,52 @@
+/*
+Copyright 2021, Yang Luo"
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+@Author
+Yang Luo, PHD
+Shenyang Institute of Automation, Chinese Academy of Sciences.
+ email: luoyang@sia.cn
+*/
+
+
+#ifndef RHCL_CAMERAFACTORY_HPP_IN
+#define RHCL_CAMERAFACTORY_HPP_IN
+
+#define KINECT_SDK 1
+
+#if (KINECT_SDK > 0)
+#include "MSKinect.hpp"
+#else
+
+#include "Freenect.hpp"
+
+#endif
+
+#include "ICamera.hpp"
+
+namespace RHCL {
+    class CameraFactory {
+    public:
+        static std::shared_ptr<ICamera> create(ICamera::Processor p = ICamera::OPENGL, bool mirror = false) {
+#if (KINECT_SDK)
+            return std::make_shared<MSKinect>(p, mirror);
+#else
+            return std::make_shared<Freeect>(p, mirror);
+#endif
+        }
+    };
+}
+
+
+#endif //RHCL_CAMERAFACTORY_HPP_IN
