@@ -181,7 +181,7 @@ namespace RHCL {
 //            stop = true;
 //        }
 
-        void extractFrame(libfreenect2::FrameMap& frameMap, ImgMat& imgMat, libfreenect2::Frame::Type type) {
+        void extractFrame(libfreenect2::FrameMap &frameMap, ImgMat &imgMat, libfreenect2::Frame::Type type) {
             libfreenect2::Frame *frame = frameMap[type];
 
             int TYPE = CV_8UC4;
@@ -210,11 +210,11 @@ namespace RHCL {
             if (mirror_ == true) {
                 cv::flip(tmp, imgMat, 1); //左右翻转
             } else {
-                    imgMat = tmp.clone();
+                imgMat = tmp.clone();
             }
         }
 
-        void generateCloud(libfreenect2::FrameMap& frameMap, PointCloudPtr pPc) {
+        void generateCloud(libfreenect2::FrameMap &frameMap, PointCloudPtr pPc) {
 
             libfreenect2::Frame *rgb = frameMap[libfreenect2::Frame::Color];
             libfreenect2::Frame *depth = frameMap[libfreenect2::Frame::Depth];
@@ -236,7 +236,8 @@ namespace RHCL {
             const float *itD0 = (float *) tmp_itD0.ptr();
             const char *itRGB0 = (char *) tmp_itRGB0.ptr();
 
-            pPc = pcl::make_shared<PointCloud>(w, h);
+//            pPc = pcl::make_shared<PointCloud>(w, h);
+            pPc = PointCloudPtr(new PointCloud(w, h));
 
             auto *itP = &pPc->points[0];
             bool is_dense = true;
@@ -278,18 +279,16 @@ namespace RHCL {
         }
 
 
-        void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p) {
+        void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams &depth_p) {
             const int w = 512;
             const int h = 424;
-            float * pm1 = colmap.data();
-            float * pm2 = rowmap.data();
-            for(int i = 0; i < w; i++)
-            {
-                *pm1++ = (i-depth_p.cx + 0.5) / depth_p.fx;
+            float *pm1 = colmap.data();
+            float *pm2 = rowmap.data();
+            for (int i = 0; i < w; i++) {
+                *pm1++ = (i - depth_p.cx + 0.5) / depth_p.fx;
             }
-            for (int i = 0; i < h; i++)
-            {
-                *pm2++ = (i-depth_p.cy + 0.5) / depth_p.fy;
+            for (int i = 0; i < h; i++) {
+                *pm2++ = (i - depth_p.cy + 0.5) / depth_p.fy;
             }
         }
 

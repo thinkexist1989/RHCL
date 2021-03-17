@@ -23,7 +23,7 @@ Shenyang Institute of Automation, Chinese Academy of Sciences.
 #ifndef RHCL_CAMERAFACTORY_HPP_IN
 #define RHCL_CAMERAFACTORY_HPP_IN
 
-#define KINECT_SDK 1
+#define KINECT_SDK 0
 
 #if (KINECT_SDK > 0)
 #include "MSKinect.hpp"
@@ -42,7 +42,7 @@ namespace RHCL {
 #if (KINECT_SDK)
             return std::make_shared<MSKinect>(p, mirror);
 #else
-            return std::make_shared<Freeect>(p, mirror);
+            return std::make_shared<Freenect>(p, mirror);
 #endif
         }
     };

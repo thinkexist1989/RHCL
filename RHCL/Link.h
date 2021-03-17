@@ -24,7 +24,6 @@ Shenyang Institute of Automation, Chinese Academy of Sciences.
 
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

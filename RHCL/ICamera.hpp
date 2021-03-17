@@ -48,7 +48,7 @@ namespace RHCL {
 
         }
 
-        virtual ~ICamera() = 0 {} //纯虚析构，多态基类，即使纯虚析构也要有声明，因为子类析构需要调用父类析构函数
+        virtual ~ICamera() {} //纯虚析构(GCC编译无法通过，因为必须在类外部声明)，多态基类，即使纯虚析构也要有声明，因为子类析构需要调用父类析构函数
 
         virtual void getDepth(ImgMat &depthMat) = 0;
 
