@@ -23,7 +23,7 @@ Shenyang Institute of Automation, Chinese Academy of Sciences.
 #ifndef RHCL_CAMERAFACTORY_HPP_IN
 #define RHCL_CAMERAFACTORY_HPP_IN
 
-#define KINECT_SDK 0
+#define KINECT_SDK 1
 
 #if (KINECT_SDK > 0)
 #include "MSKinect.hpp"

@@ -4,8 +4,8 @@
 
 #include <yaml-cpp/yaml.h>
 #include <iostream>
-#include "Model.hpp"
-#include "Link.hpp"
+#include "Model.h"
+#include "Link.h"
 #include <Eigen/Dense>
 #include <pcl/visualization/pcl_visualizer.h>
 

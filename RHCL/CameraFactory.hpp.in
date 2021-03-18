@@ -42,7 +42,7 @@ namespace RHCL {
 #if (KINECT_SDK)
             return std::make_shared<MSKinect>(p, mirror);
 #else
-            return std::make_shared<Freeect>(p, mirror);
+            return std::make_shared<Freenect>(p, mirror);
 #endif
         }
     };
