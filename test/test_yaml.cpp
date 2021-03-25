@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     std::cout << "info size is: " << info.size() << std::endl;
     std::cout << "robot freedom is " << info.size() - 1 << std::endl;
 
-    RHCL::Model model("../../res/iiwa/config.yaml");
+    RHCL::Model model("../../res/staubli_tx60l/config.yaml");
 
     std::vector<double> jntRads(model.getFreedom(), 0);
 

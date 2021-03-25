@@ -56,7 +56,7 @@ namespace RHCL {
 
         virtual void getColor(ImgMat &colorMat) = 0;
 
-        virtual void getPointCloud(PointCloudPtr pPc) = 0;
+        virtual void getPointCloud(PointCloudPtr& pPc) = 0;
 
         virtual void getAll(ImgMat &colorMat, ImgMat &depthMat, PointCloudPtr pcPtr) = 0;
 

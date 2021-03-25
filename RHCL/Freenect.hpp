@@ -152,7 +152,7 @@ namespace RHCL {
             std::cout << "Get Color Image" << std::endl;
         }
 
-        void getPointCloud(PointCloudPtr pPc) override {
+        void getPointCloud(PointCloudPtr& pPc) override {
             listener_.waitForNewFrame(frames_);
 
             generateCloud(frames_, pPc);
@@ -214,7 +214,7 @@ namespace RHCL {
             }
         }
 
-        void generateCloud(libfreenect2::FrameMap &frameMap, PointCloudPtr pPc) {
+        void generateCloud(libfreenect2::FrameMap &frameMap, PointCloudPtr& pPc) {
 
             libfreenect2::Frame *rgb = frameMap[libfreenect2::Frame::Color];
             libfreenect2::Frame *depth = frameMap[libfreenect2::Frame::Depth];

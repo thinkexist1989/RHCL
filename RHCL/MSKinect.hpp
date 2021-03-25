@@ -105,7 +105,7 @@ namespace RHCL {
             irMat = cv::Mat(infraredHeight, infraredWidth, CV_16UC1, &infraredBuffer[0]).clone();
         }
 
-        void getPointCloud(PointCloudPtr pPc) override {
+        void getPointCloud(PointCloudPtr& pPc) override {
             cv::Mat mat;
             getColor(mat);
             getDepth(mat); //先获取新的depthBuffer
